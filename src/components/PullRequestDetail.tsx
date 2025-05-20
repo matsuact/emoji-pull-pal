@@ -95,7 +95,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     } catch (err) {
       toast("Error", {
         description: "Failed to add reaction. " + (err as Error).message,
-        variant: "destructive",
+        // The 'variant' property is not recognized by sonner, so we're removing it
       });
     }
   };

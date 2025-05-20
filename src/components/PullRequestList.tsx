@@ -145,12 +145,16 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
         <Pagination className="mt-4">
           <PaginationContent>
             <PaginationItem>
-              <Button
-                as={PaginationPrevious}
+              {/* Fix: Don't use 'as' prop with Button, use PaginationLink directly */}
+              <PaginationLink
                 onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                 className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                disabled={currentPage === 1}
-              />
+              >
+                <span className="flex items-center">
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </span>
+              </PaginationLink>
             </PaginationItem>
 
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -179,12 +183,16 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
             })}
 
             <PaginationItem>
-              <Button
-                as={PaginationNext}
+              {/* Fix: Don't use 'as' prop with Button, use PaginationLink directly */}
+              <PaginationLink
                 onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                 className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                disabled={currentPage === totalPages}
-              />
+              >
+                <span className="flex items-center">
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </span>
+              </PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>
