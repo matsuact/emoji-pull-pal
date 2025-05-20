@@ -52,8 +52,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
 
   const handleReaction = async (commentId: number, reactionType: string) => {
     if (!isAuthenticated) {
-      toast({
-        title: "Authentication required",
+      toast("Authentication required", {
         description: "Please login with GitHub to add reactions",
       });
       return;
@@ -61,8 +60,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     
     try {
       await addReaction(owner, repo, commentId, reactionType);
-      toast({
-        title: "Reaction added",
+      toast("Reaction added", {
         description: "Your reaction has been registered (simulated)",
       });
       
@@ -95,8 +93,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         return comment;
       }));
     } catch (err) {
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Failed to add reaction. " + (err as Error).message,
         variant: "destructive",
       });
