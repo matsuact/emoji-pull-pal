@@ -2,7 +2,8 @@
 import { GithubUser } from '@/types/github';
 
 // GitHub OAuth configuration
-const CLIENT_ID = "your_github_client_id"; // You'll need to replace this with your actual GitHub OAuth App client ID
+// Use environment variable if available, otherwise fallback to the provided client ID
+const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liRRv54GQOL20K38"; 
 const REDIRECT_URI = encodeURIComponent(window.location.origin);
 const SCOPE = "repo"; // Minimum scope needed for repository operations
 
