@@ -4,8 +4,11 @@ import { GithubUser } from '@/types/github';
 // GitHub OAuth configuration
 // Use environment variable if available, otherwise fallback to the provided client ID
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liRRv54GQOL20K38"; 
-const REDIRECT_URI = encodeURIComponent(window.location.origin);
+const REDIRECT_URI = encodeURIComponent(`${window.location.origin}/auth/callback`);
 const SCOPE = "repo"; // Minimum scope needed for repository operations
+
+// Log the redirect URI for debugging purposes
+console.log("GitHub OAuth redirect URI:", decodeURIComponent(REDIRECT_URI));
 
 // Storage keys
 const TOKEN_KEY = "github_access_token";
