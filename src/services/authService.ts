@@ -20,28 +20,46 @@ export const loginWithGithub = () => {
 };
 
 /**
- * Handles the OAuth callback
- * Note: This would typically require a backend service to exchange the code for a token
- * For demo purposes, we're simulating this process
+ * Handles the OAuth callback by exchanging the code for an access token via a proxy server
  */
 export const handleAuthCallback = async (code: string): Promise<boolean> => {
-  // In a real app, you would:
-  // 1. Send the code to your backend
-  // 2. Backend exchanges code for an access token using client_secret
-  // 3. Backend returns the token to the frontend
-
-  console.log("Auth code received:", code);
-  
-  // Simulate token exchange
-  // In a production app, this would be an actual API call to your backend
   try {
-    // Simulate successful authentication
-    const mockToken = `mock_${code}_token`;
-    saveToken(mockToken);
+    console.log("Auth code received:", code);
     
-    // Fetch user info with token
-    await fetchAndSaveUserInfo(mockToken);
-    return true;
+    // Using a proxy server to exchange the code for an access token
+    // This avoids exposing the client secret in the frontend
+    const tokenResponse = await fetch('https://lovable-github-oauth-proxy.vercel.app/api/exchange-code', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        client_id: CLIENT_ID,
+        redirect_uri: decodeURIComponent(REDIRECT_URI)
+      })
+    });
+    
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error("Token exchange failed:", errorData);
+      return false;
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+    
+    if (!accessToken) {
+      console.error("No access token received");
+      return false;
+    }
+
+    // Save the token
+    saveToken(accessToken);
+    
+    // Fetch user info with the token
+    const success = await fetchAndSaveUserInfo(accessToken);
+    return success;
   } catch (error) {
     console.error("Authentication failed:", error);
     return false;
@@ -88,23 +106,32 @@ export const getUser = (): GithubUser | null => {
 /**
  * Fetches and saves the user's GitHub profile info
  */
-const fetchAndSaveUserInfo = async (token: string): Promise<void> => {
+const fetchAndSaveUserInfo = async (token: string): Promise<boolean> => {
   try {
-    // In a real app, this would be:
-    // const response = await fetch('https://api.github.com/user', {
-    //   headers: { Authorization: `token ${token}` }
-    // });
-
-    // Simulate a successful API response
-    const mockUser: GithubUser = {
-      login: "github_user",
-      avatar_url: "https://picsum.photos/200",
-      name: "GitHub User"
+    // Real GitHub API call to get user profile
+    const response = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `token ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      console.error("Failed to fetch user info:", await response.text());
+      return false;
+    }
+    
+    const userData = await response.json();
+    
+    const githubUser: GithubUser = {
+      login: userData.login,
+      avatar_url: userData.avatar_url,
+      name: userData.name || userData.login
     };
     
-    localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+    localStorage.setItem(USER_KEY, JSON.stringify(githubUser));
+    return true;
   } catch (error) {
     console.error("Error fetching user info:", error);
-    throw error;
+    return false;
   }
 };
