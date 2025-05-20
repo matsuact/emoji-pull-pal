@@ -1,19 +1,88 @@
 
-import { PullRequest, PullRequestDetails, Comment, Reaction } from "../types/github";
+import { PullRequest, PullRequestDetails, Comment, Reaction, SortOption } from "../types/github";
+import { getToken } from "./authService";
 
 const BASE_URL = "https://api.github.com";
 
-export const fetchPullRequests = async (owner: string, repo: string): Promise<PullRequest[]> => {
+/**
+ * Helper function to add auth headers if authenticated
+ */
+const getAuthHeaders = (): HeadersInit => {
+  const headers: HeadersInit = {
+    "Accept": "application/vnd.github.v3+json"
+  };
+  
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `token ${token}`;
+  }
+  
+  return headers;
+};
+
+/**
+ * Fetch pull requests with pagination and sorting
+ */
+export const fetchPullRequests = async (
+  owner: string, 
+  repo: string, 
+  page: number = 1, 
+  perPage: number = 10,
+  sort: SortOption = "newest"
+): Promise<{pullRequests: PullRequest[], totalCount: number}> => {
   try {
-    const response = await fetch(`${BASE_URL}/repos/${owner}/${repo}/pulls?state=all`);
+    // Convert our sort option to GitHub API parameters
+    let apiSort = "created";
+    let direction = "desc";
+    
+    switch (sort) {
+      case "oldest":
+        apiSort = "created";
+        direction = "asc";
+        break;
+      case "most-comments":
+        apiSort = "comments";
+        direction = "desc";
+        break;
+      case "least-comments":
+        apiSort = "comments";
+        direction = "asc";
+        break;
+      case "newest":
+      default:
+        apiSort = "created";
+        direction = "desc";
+        break;
+    }
+    
+    const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
+    const response = await fetch(url, {
+      headers: getAuthHeaders()
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch pull requests: ${response.status}`);
     }
     
+    // Get total count from header
+    const linkHeader = response.headers.get("Link");
+    let totalCount = 0;
+    
+    if (linkHeader) {
+      const lastPageMatch = linkHeader.match(/page=(\d+)&per_page=\d+>; rel="last"/);
+      if (lastPageMatch && lastPageMatch[1]) {
+        totalCount = parseInt(lastPageMatch[1]) * perPage;
+      }
+    }
+    
+    // If link header is missing, assume we're on the last page
+    if (totalCount === 0) {
+      totalCount = (page - 1) * perPage + (await response.json()).length;
+    }
+    
     const data = await response.json();
     
-    return data.map((pr: any) => ({
+    const pullRequests = data.map((pr: any) => ({
       id: pr.id,
       number: pr.number,
       title: pr.title,
@@ -25,6 +94,8 @@ export const fetchPullRequests = async (owner: string, repo: string): Promise<Pu
       created_at: pr.created_at,
       updated_at: pr.updated_at
     }));
+    
+    return { pullRequests, totalCount };
   } catch (error) {
     console.error("Error fetching pull requests:", error);
     throw error;
@@ -33,7 +104,9 @@ export const fetchPullRequests = async (owner: string, repo: string): Promise<Pu
 
 export const fetchPullRequestDetails = async (owner: string, repo: string, prNumber: number): Promise<PullRequestDetails> => {
   try {
-    const response = await fetch(`${BASE_URL}/repos/${owner}/${repo}/pulls/${prNumber}`);
+    const response = await fetch(`${BASE_URL}/repos/${owner}/${repo}/pulls/${prNumber}`, {
+      headers: getAuthHeaders()
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch pull request details: ${response.status}`);
@@ -64,7 +137,9 @@ export const fetchPullRequestDetails = async (owner: string, repo: string, prNum
 export const fetchPullRequestComments = async (owner: string, repo: string, prNumber: number): Promise<Comment[]> => {
   try {
     const issueCommentsUrl = `${BASE_URL}/repos/${owner}/${repo}/issues/${prNumber}/comments`;
-    const response = await fetch(issueCommentsUrl);
+    const response = await fetch(issueCommentsUrl, {
+      headers: getAuthHeaders()
+    });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch comments: ${response.status}`);
@@ -100,11 +175,28 @@ export const addReaction = async (
   commentId: number, 
   reaction: string
 ): Promise<void> => {
-  console.log(`Adding ${reaction} reaction to comment ${commentId} (Simulation)`);
-  // In a real implementation, this would make a POST request to GitHub's API
-  // Note: This requires authentication which is beyond the scope of this demo
-  // The actual endpoint would be:
-  // POST /repos/{owner}/{repo}/issues/comments/{comment_id}/reactions
+  const token = getToken();
   
-  // For now, we're just logging the action since we don't have auth set up
+  if (!token) {
+    throw new Error("Authentication required to add reactions");
+  }
+  
+  try {
+    // In a real implementation with authentication:
+    // const url = `${BASE_URL}/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`;
+    // await fetch(url, {
+    //   method: "POST",
+    //   headers: {
+    //     ...getAuthHeaders(),
+    //     "Accept": "application/vnd.github.squirrel-girl-preview+json"
+    //   },
+    //   body: JSON.stringify({ content: reaction })
+    // });
+    
+    // For now, we're just logging the action
+    console.log(`Adding ${reaction} reaction to comment ${commentId}`);
+  } catch (error) {
+    console.error("Error adding reaction:", error);
+    throw error;
+  }
 };

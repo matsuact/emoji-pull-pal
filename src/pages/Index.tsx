@@ -1,37 +1,66 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import RepositoryInput from '@/components/RepositoryInput';
 import PullRequestList from '@/components/PullRequestList';
-import PullRequestDetail from '@/components/PullRequestDetail';
 import { fetchPullRequests } from '@/services/githubService';
-import { PullRequest } from '@/types/github';
-import { Separator } from '@/components/ui/separator';
+import { SortOption } from '@/types/github';
+import LoginButton from '@/components/LoginButton';
+import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [repository, setRepository] = useState<{ owner: string; name: string } | null>(null);
-  const [selectedPR, setSelectedPR] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const perPage = 10;
 
-  const { data: pullRequests, isLoading, error } = useQuery({
-    queryKey: repository ? ['pullRequests', repository.owner, repository.name] : null,
-    queryFn: repository ? () => fetchPullRequests(repository.owner, repository.name) : () => Promise.resolve([]),
+  // On mount, check if we have a stored repository
+  useEffect(() => {
+    const storedRepo = localStorage.getItem('current-repository');
+    if (storedRepo) {
+      setRepository(JSON.parse(storedRepo));
+    }
+  }, []);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: repository ? ['pullRequests', repository.owner, repository.name, currentPage, perPage, sortOption] : null,
+    queryFn: repository ? 
+      () => fetchPullRequests(repository.owner, repository.name, currentPage, perPage, sortOption) : 
+      () => Promise.resolve({pullRequests: [], totalCount: 0}),
     enabled: !!repository
   });
 
   const handleRepositorySubmit = (owner: string, repo: string) => {
-    setRepository({ owner, name: repo });
-    setSelectedPR(null); // Reset selected PR when changing repository
+    const newRepo = { owner, name: repo };
+    setRepository(newRepo);
+    setCurrentPage(1); // Reset to first page
+    
+    // Store repository in localStorage for persistence
+    localStorage.setItem('current-repository', JSON.stringify(newRepo));
   };
 
   const handleSelectPR = (prNumber: number) => {
-    setSelectedPR(prNumber);
+    navigate(`/pr/${prNumber}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSortChange = (option: SortOption) => {
+    setSortOption(option);
+    setCurrentPage(1); // Reset to first page when sort changes
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="p-4 bg-card border-b">
-        <div className="container mx-auto">
+      <header className="p-4 bg-card border-b sticky top-0 z-10">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold">GitHub PR Viewer</h1>
+          <LoginButton />
         </div>
       </header>
 
@@ -49,6 +78,17 @@ const Index = () => {
           </div>
         )}
 
+        {!isAuthenticated && repository && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <p className="flex items-center">
+              <span className="font-medium">Note:</span>
+              <span className="ml-2">
+                Login with GitHub for additional features like adding reactions
+              </span>
+            </p>
+          </div>
+        )}
+
         {isLoading && <div className="text-center p-4">Loading pull requests...</div>}
 
         {error && (
@@ -57,29 +97,17 @@ const Index = () => {
           </div>
         )}
 
-        {!isLoading && !error && repository && (
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="w-full md:w-1/3">
-              <PullRequestList
-                pullRequests={pullRequests || []}
-                onSelectPR={handleSelectPR}
-                selectedPR={selectedPR || undefined}
-              />
-            </div>
-
-            {selectedPR && repository && (
-              <>
-                <Separator orientation="vertical" className="hidden md:block" />
-                <div className="w-full md:w-2/3">
-                  <PullRequestDetail
-                    owner={repository.owner}
-                    repo={repository.name}
-                    prNumber={selectedPR}
-                  />
-                </div>
-              </>
-            )}
-          </div>
+        {!isLoading && !error && repository && data && (
+          <PullRequestList
+            pullRequests={data.pullRequests}
+            onSelectPR={handleSelectPR}
+            totalCount={data.totalCount}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            onSortChange={handleSortChange}
+            sortOption={sortOption}
+            perPage={perPage}
+          />
         )}
       </main>
     </div>

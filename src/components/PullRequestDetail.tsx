@@ -9,7 +9,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { PullRequestDetails, Comment } from '@/types/github';
 import { fetchPullRequestDetails, fetchPullRequestComments, addReaction } from '@/services/githubService';
 import { Smile, Frown, Heart, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/sonner";
+import { useAuth } from '@/context/AuthContext';
 
 interface PullRequestDetailProps {
   owner: string;
@@ -26,7 +27,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,6 +51,14 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
   }, [owner, repo, prNumber]);
 
   const handleReaction = async (commentId: number, reactionType: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please login with GitHub to add reactions",
+      });
+      return;
+    }
+    
     try {
       await addReaction(owner, repo, commentId, reactionType);
       toast({
@@ -57,12 +66,38 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         description: "Your reaction has been registered (simulated)",
       });
       
-      // In a real app, we would refetch the comments to get updated reactions
-      // For this demo, we'll just show the toast
+      // In a real app with proper authentication, we would refetch the comments to get updated reactions
+      // For this demo, we'll just update the UI optimistically
+      setComments(comments.map(comment => {
+        if (comment.id === commentId && comment.reactions) {
+          const updatedReactions = { ...comment.reactions };
+          
+          switch (reactionType) {
+            case 'thumbs_up':
+              updatedReactions["+1"] = (updatedReactions["+1"] || 0) + 1;
+              break;
+            case 'thumbs_down':
+              updatedReactions["-1"] = (updatedReactions["-1"] || 0) + 1;
+              break;
+            case 'smile':
+              updatedReactions.smile = (updatedReactions.smile || 0) + 1;
+              break;
+            case 'frown':
+              updatedReactions.frown = (updatedReactions.frown || 0) + 1;
+              break;
+            case 'heart':
+              updatedReactions.heart = (updatedReactions.heart || 0) + 1;
+              break;
+          }
+          
+          return { ...comment, reactions: updatedReactions };
+        }
+        return comment;
+      }));
     } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to add reaction",
+        description: "Failed to add reaction. " + (err as Error).message,
         variant: "destructive",
       });
     }
@@ -94,10 +129,10 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
   }
 
   return (
-    <div className="w-full max-w-3xl">
+    <div className="w-full max-w-3xl mx-auto">
       <Card className="p-6 mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">{prDetails.title}</h1>
+          <h1 className="text-xl md:text-2xl font-bold break-words">{prDetails.title}</h1>
           {getStateBadge(prDetails.state)}
         </div>
         
@@ -148,12 +183,14 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                   
                   <Separator className="my-3" />
                   
-                  <div className="flex space-x-1">
+                  <div className="flex flex-wrap gap-1">
                     <Button 
                       size="sm" 
                       variant="outline" 
                       className="text-xs" 
                       onClick={() => handleReaction(comment.id, 'thumbs_up')}
+                      disabled={!isAuthenticated}
+                      title={isAuthenticated ? "Add 👍 reaction" : "Login to add reactions"}
                     >
                       <ThumbsUp className="h-4 w-4 mr-1" />
                       {comment.reactions?.["+1"] || 0}
@@ -163,6 +200,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'thumbs_down')}
+                      disabled={!isAuthenticated}
+                      title={isAuthenticated ? "Add 👎 reaction" : "Login to add reactions"}
                     >
                       <ThumbsDown className="h-4 w-4 mr-1" />
                       {comment.reactions?.["-1"] || 0}
@@ -172,6 +211,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'smile')}
+                      disabled={!isAuthenticated}
+                      title={isAuthenticated ? "Add 😄 reaction" : "Login to add reactions"}
                     >
                       <Smile className="h-4 w-4 mr-1" />
                       {comment.reactions?.smile || 0}
@@ -181,6 +222,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'frown')}
+                      disabled={!isAuthenticated}
+                      title={isAuthenticated ? "Add 😕 reaction" : "Login to add reactions"}
                     >
                       <Frown className="h-4 w-4 mr-1" />
                       {comment.reactions?.frown || 0}
@@ -190,6 +233,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'heart')}
+                      disabled={!isAuthenticated}
+                      title={isAuthenticated ? "Add ❤️ reaction" : "Login to add reactions"}
                     >
                       <Heart className="h-4 w-4 mr-1" />
                       {comment.reactions?.heart || 0}

@@ -46,3 +46,11 @@ export interface Reaction {
     login: string;
   };
 }
+
+export interface GithubUser {
+  login: string;
+  avatar_url: string;
+  name?: string;
+}
+
+export type SortOption = "newest" | "oldest" | "most-comments" | "least-comments";
