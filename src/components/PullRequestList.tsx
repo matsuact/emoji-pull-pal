@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, SortDesc } from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter, SortDesc } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Pagination,
