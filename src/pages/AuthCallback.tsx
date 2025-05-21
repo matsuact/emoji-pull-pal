@@ -24,6 +24,7 @@ const AuthCallback = () => {
         const errorDescription = urlParams.get('error_description');
         
         if (errorParam) {
+          console.error("OAuth error:", errorParam, errorDescription);
           setError(`GitHub認証エラー: ${errorDescription || 'Unknown error'}`);
           setStatus('認証が拒否されました');
           toast.error('GitHub認証に失敗しました');
@@ -32,15 +33,26 @@ const AuthCallback = () => {
         }
         
         // With Supabase, the session should already be established if auth was successful
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          setError(`セッションエラー: ${sessionError.message}`);
+          setStatus('認証に失敗しました');
+          toast.error('認証エラーが発生しました');
+          setIsProcessing(false);
+          return;
+        }
         
         if (session) {
+          console.log("Authentication successful, session established");
           setStatus('認証成功！リダイレクト中...');
           toast.success('GitHubへのログインに成功しました');
           setTimeout(() => navigate('/'), 1000);
         } else {
           // If we don't have a session but no explicit error either, something went wrong
-          setError('認証中にエラーが発生しました');
+          console.error("No session found after authentication");
+          setError('認証中にエラーが発生しました: セッションが確立できませんでした');
           setStatus('認証に失敗しました');
           toast.error('GitHub認証に失敗しました');
           setIsProcessing(false);

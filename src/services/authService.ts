@@ -7,10 +7,14 @@ import { GithubUser } from '@/types/github';
  */
 export const loginWithGithub = async () => {
   try {
+    // Use the current origin as the redirectTo to make development and production work
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    console.log("Redirecting to:", redirectUrl);
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
         scopes: 'repo'
       }
     });
@@ -31,10 +35,16 @@ export const loginWithGithub = async () => {
 /**
  * Handles the OAuth callback
  */
-export const handleAuthCallback = async (code: string): Promise<boolean> => {
-  // With Supabase, the code is already handled by the time we reach this function
-  // This is just a compatibility layer for the existing code
+export const handleAuthCallback = async (): Promise<boolean> => {
   try {
+    // Check for hash fragment from OAuth redirect
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const access_token = hashParams.get('access_token');
+    
+    if (access_token) {
+      console.log("Found access token in URL hash");
+    }
+    
     // Check if we have a session
     const { data: { session } } = await supabase.auth.getSession();
     return !!session;
