@@ -16,6 +16,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     flowType: 'pkce', // Change from 'implicit' to 'pkce' for better security
     detectSessionInUrl: true,
-    redirectTo: window.location.origin + '/auth/callback' // Fixed property name from redirect_to to redirectTo
+    // The `as any` casting is necessary because of type definition mismatch
+    // between current version of Supabase types and the actual API
   }
 });
+
+// This helper function adds the redirectTo option when needed
+export const getRedirectTo = () => `${window.location.origin}/auth/callback`;

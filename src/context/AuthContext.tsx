@@ -49,12 +49,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           .eq('id', userId as any)
           .single();
         
-        if (data && !error) {
-          // If we have profile data, use it - safely checking if properties exist
+        // Type guard to check if data is valid and not an error
+        if (data && !error && typeof data === 'object') {
+          // Use bracket notation to access properties safely
           return {
-            login: data?.username || githubUser.login,
-            avatar_url: data?.avatar_url || githubUser.avatar_url,
-            name: data?.full_name || githubUser.name
+            login: data['username'] || githubUser.login,
+            avatar_url: data['avatar_url'] || githubUser.avatar_url,
+            name: data['full_name'] || githubUser.name
           };
         }
       } catch (profileError) {

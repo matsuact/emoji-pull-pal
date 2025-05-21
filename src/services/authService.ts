@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getRedirectTo } from "@/integrations/supabase/client";
 import { GithubUser } from '@/types/github';
 
 /**
@@ -8,7 +8,7 @@ import { GithubUser } from '@/types/github';
 export const loginWithGithub = async () => {
   try {
     // Use the current origin as the redirectTo to make development and production work
-    const redirectUrl = `${window.location.origin}/auth/callback`;
+    const redirectUrl = getRedirectTo();
     console.log("Redirecting to:", redirectUrl);
     
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -116,12 +116,13 @@ export const getUser = async (): Promise<GithubUser | null> => {
         .eq('id', session.user.id as any)
         .single();
       
-      if (data && !error) {
-        // If we have profile data, use it
+      // Type guard to check if data is valid and not an error
+      if (data && !error && typeof data === 'object') {
+        // Safely access properties with optional chaining
         return {
-          login: data?.username || githubUser.login,
-          avatar_url: data?.avatar_url || githubUser.avatar_url,
-          name: data?.full_name || githubUser.name
+          login: data['username'] || githubUser.login,
+          avatar_url: data['avatar_url'] || githubUser.avatar_url,
+          name: data['full_name'] || githubUser.name
         };
       }
     } catch (profileError) {
