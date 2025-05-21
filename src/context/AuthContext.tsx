@@ -1,13 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { GithubUser } from '@/types/github';
-import { getToken, getUser, logout } from '@/services/authService';
+import { supabase } from '@/integrations/supabase/client';
+import { logout } from '@/services/authService';
 import { toast } from '@/components/ui/sonner';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: GithubUser | null;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -18,40 +19,102 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<GithubUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const handleLogout = async () => {
+    await logout();
+    setIsAuthenticated(false);
+    setUser(null);
+    toast.info('ログアウトしました');
+  };
+
+  const refreshUserData = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('login, avatar_url, name')
+        .eq('id', userId)
+        .single();
+      
+      if (error || !data) {
+        console.error("Error fetching user profile:", error);
+        return null;
+      }
+      
+      return {
+        login: data.login,
+        avatar_url: data.avatar_url,
+        name: data.name
+      };
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    // Check authentication status on mount
-    const checkAuth = async () => {
-      setIsLoading(true);
-      try {
-        const token = getToken();
-        if (token) {
-          const userData = getUser();
-          if (userData) {
+    setIsLoading(true);
+
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state changed:", event);
+        
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (session) {
             setIsAuthenticated(true);
+            // Defer data fetching with setTimeout to prevent potential deadlocks
+            setTimeout(async () => {
+              const userData = await refreshUserData(session.user.id);
+              if (userData) {
+                setUser(userData);
+              } else {
+                // Fallback to metadata if profile not yet created
+                setUser({
+                  login: session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
+                  avatar_url: session.user.user_metadata.avatar_url,
+                  name: session.user.user_metadata.name
+                });
+              }
+            }, 0);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          setIsAuthenticated(true);
+          const userData = await refreshUserData(session.user.id);
+          if (userData) {
             setUser(userData);
           } else {
-            // Token exists but no user data, logout
-            handleLogout();
-            toast.error('セッションが無効になりました。再度ログインしてください。');
+            // Fallback to metadata if profile not yet created
+            setUser({
+              login: session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
+              avatar_url: session.user.user_metadata.avatar_url,
+              name: session.user.user_metadata.name
+            });
           }
         }
       } catch (error) {
-        console.error('認証状態の確認中にエラー：', error);
-        handleLogout();
+        console.error("Error checking session:", error);
       } finally {
         setIsLoading(false);
       }
     };
     
-    checkAuth();
-  }, []);
+    checkSession();
 
-  const handleLogout = () => {
-    logout();
-    setIsAuthenticated(false);
-    setUser(null);
-    toast.info('ログアウトしました');
-  };
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ 

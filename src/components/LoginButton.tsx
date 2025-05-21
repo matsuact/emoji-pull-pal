@@ -9,11 +9,11 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 const LoginButton: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (isAuthenticated) {
-      logout();
+      await logout();
     } else {
-      loginWithGithub();
+      await loginWithGithub();
     }
   };
 

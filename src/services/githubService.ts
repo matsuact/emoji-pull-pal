@@ -1,20 +1,24 @@
 
 import { PullRequest, PullRequestDetails, Comment, Reaction, SortOption } from "../types/github";
-import { getToken } from "./authService";
+import { supabase } from "@/integrations/supabase/client";
 
 const BASE_URL = "https://api.github.com";
 
 /**
  * Helper function to add auth headers if authenticated
  */
-const getAuthHeaders = (): HeadersInit => {
+const getAuthHeaders = async (): Promise<HeadersInit> => {
   const headers: HeadersInit = {
     "Accept": "application/vnd.github.v3+json"
   };
   
-  const token = getToken();
-  if (token) {
-    headers["Authorization"] = `token ${token}`;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.provider_token) {
+      headers["Authorization"] = `token ${session.provider_token}`;
+    }
+  } catch (error) {
+    console.error("Error getting auth headers:", error);
   }
   
   return headers;
@@ -57,7 +61,7 @@ export const fetchPullRequests = async (
     
     const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
     const response = await fetch(url, {
-      headers: getAuthHeaders()
+      headers: await getAuthHeaders()
     });
     
     if (!response.ok) {
@@ -175,26 +179,28 @@ export const addReaction = async (
   commentId: number, 
   reaction: string
 ): Promise<void> => {
-  const token = getToken();
-  
-  if (!token) {
-    throw new Error("Authentication required to add reactions");
-  }
-  
   try {
-    // In a real implementation with authentication:
-    // const url = `${BASE_URL}/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`;
-    // await fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     ...getAuthHeaders(),
-    //     "Accept": "application/vnd.github.squirrel-girl-preview+json"
-    //   },
-    //   body: JSON.stringify({ content: reaction })
-    // });
+    const { data: { session } } = await supabase.auth.getSession();
     
-    // For now, we're just logging the action
-    console.log(`Adding ${reaction} reaction to comment ${commentId}`);
+    if (!session?.provider_token) {
+      throw new Error("Authentication required to add reactions");
+    }
+    
+    const url = `${BASE_URL}/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        ...await getAuthHeaders(),
+        "Accept": "application/vnd.github.squirrel-girl-preview+json"
+      },
+      body: JSON.stringify({ content: reaction })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to add reaction: ${response.status}`);
+    }
+    
+    console.log(`Added ${reaction} reaction to comment ${commentId}`);
   } catch (error) {
     console.error("Error adding reaction:", error);
     throw error;

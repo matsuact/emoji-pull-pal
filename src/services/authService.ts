@@ -1,140 +1,135 @@
 
+import { supabase } from "@/integrations/supabase/client";
 import { GithubUser } from '@/types/github';
 
-// GitHub OAuth configuration
-// Use environment variable if available, otherwise fallback to the provided client ID
-const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "Ov23liRRv54GQOL20K38"; 
-const REDIRECT_URI = encodeURIComponent(`${window.location.origin}/auth/callback`);
-const SCOPE = "repo"; // Minimum scope needed for repository operations
-
-// Log the redirect URI for debugging purposes
-console.log("GitHub OAuth redirect URI:", decodeURIComponent(REDIRECT_URI));
-
-// Storage keys
-const TOKEN_KEY = "github_access_token";
-const USER_KEY = "github_user";
-
 /**
- * Initiates the GitHub OAuth flow
+ * Initiates the GitHub OAuth flow using Supabase
  */
-export const loginWithGithub = () => {
-  const authUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}`;
-  window.location.href = authUrl;
-};
-
-/**
- * Handles the OAuth callback by exchanging the code for an access token via a proxy server
- */
-export const handleAuthCallback = async (code: string): Promise<boolean> => {
+export const loginWithGithub = async () => {
   try {
-    console.log("Auth code received:", code);
-    
-    // Using a proxy server to exchange the code for an access token
-    // This avoids exposing the client secret in the frontend
-    const tokenResponse = await fetch('https://lovable-github-oauth-proxy.vercel.app/api/exchange-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        code,
-        client_id: CLIENT_ID,
-        redirect_uri: decodeURIComponent(REDIRECT_URI)
-      })
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'repo'
+      }
     });
     
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error("Token exchange failed:", errorData);
-      return false;
+    if (error) {
+      console.error("GitHub OAuth error:", error.message);
+      throw error;
     }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
     
-    if (!accessToken) {
-      console.error("No access token received");
-      return false;
-    }
-
-    // Save the token
-    saveToken(accessToken);
-    
-    // Fetch user info with the token
-    const success = await fetchAndSaveUserInfo(accessToken);
-    return success;
+    // Supabase handles the redirect automatically
+    return true;
   } catch (error) {
-    console.error("Authentication failed:", error);
+    console.error("Failed to initiate GitHub login:", error);
     return false;
   }
 };
 
 /**
- * Gets the stored access token
+ * Handles the OAuth callback
  */
-export const getToken = (): string | null => {
-  return localStorage.getItem(TOKEN_KEY);
+export const handleAuthCallback = async (code: string): Promise<boolean> => {
+  // With Supabase, the code is already handled by the time we reach this function
+  // This is just a compatibility layer for the existing code
+  try {
+    // Check if we have a session
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  } catch (error) {
+    console.error("Auth callback error:", error);
+    return false;
+  }
 };
 
 /**
- * Saves the access token
+ * Gets the stored access token from Supabase session
  */
-export const saveToken = (token: string): void => {
-  localStorage.setItem(TOKEN_KEY, token);
+export const getToken = async (): Promise<string | null> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.provider_token || null;
+  } catch (error) {
+    console.error("Error getting token:", error);
+    return null;
+  }
 };
 
 /**
- * Clears the stored token and user info
+ * No need to save token manually, Supabase handles this
  */
-export const logout = (): void => {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+export const saveToken = (): void => {
+  // No-op, Supabase handles token storage
+};
+
+/**
+ * Logout using Supabase
+ */
+export const logout = async (): Promise<void> => {
+  try {
+    await cleanupAuthState();
+    await supabase.auth.signOut({ scope: 'global' });
+  } catch (error) {
+    console.error("Error during logout:", error);
+  }
 };
 
 /**
  * Checks if user is authenticated
  */
-export const isAuthenticated = (): boolean => {
-  return !!getToken();
+export const isAuthenticated = async (): Promise<boolean> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  } catch (error) {
+    console.error("Error checking authentication:", error);
+    return false;
+  }
 };
 
 /**
  * Gets the authenticated user's info
  */
-export const getUser = (): GithubUser | null => {
-  const userJson = localStorage.getItem(USER_KEY);
-  return userJson ? JSON.parse(userJson) : null;
+export const getUser = async (): Promise<GithubUser | null> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) return null;
+    
+    // Get user profile from Supabase
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('login, avatar_url, name')
+      .eq('id', session.user.id)
+      .single();
+    
+    if (error || !data) {
+      console.error("Error fetching user profile:", error);
+      return null;
+    }
+    
+    const githubUser: GithubUser = {
+      login: data.login || session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
+      avatar_url: data.avatar_url || session.user.user_metadata.avatar_url,
+      name: data.name || session.user.user_metadata.name
+    };
+    
+    return githubUser;
+  } catch (error) {
+    console.error("Error getting user:", error);
+    return null;
+  }
 };
 
 /**
- * Fetches and saves the user's GitHub profile info
+ * Cleans up any auth-related local storage items
  */
-const fetchAndSaveUserInfo = async (token: string): Promise<boolean> => {
-  try {
-    // Real GitHub API call to get user profile
-    const response = await fetch('https://api.github.com/user', {
-      headers: {
-        Authorization: `token ${token}`
-      }
-    });
-    
-    if (!response.ok) {
-      console.error("Failed to fetch user info:", await response.text());
-      return false;
-    }
-    
-    const userData = await response.json();
-    
-    const githubUser: GithubUser = {
-      login: userData.login,
-      avatar_url: userData.avatar_url,
-      name: userData.name || userData.login
-    };
-    
-    localStorage.setItem(USER_KEY, JSON.stringify(githubUser));
-    return true;
-  } catch (error) {
-    console.error("Error fetching user info:", error);
-    return false;
-  }
+export const cleanupAuthState = async () => {
+  // Clean up any leftover custom auth state
+  localStorage.removeItem("github_access_token");
+  localStorage.removeItem("github_user");
+  
+  // Supabase will handle its own auth state
 };

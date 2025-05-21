@@ -1,11 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { handleAuthCallback } from '@/services/authService';
 import { toast } from "@/components/ui/sonner";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -18,40 +18,31 @@ const AuthCallback = () => {
       try {
         setIsProcessing(true);
         
-        // Get the authorization code from URL
+        // Check if there was an error in the URL
         const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
         const errorParam = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
         
         if (errorParam) {
-          const errorDescription = urlParams.get('error_description') || 'Unknown error';
-          setError(`GitHub認証エラー: ${errorDescription}`);
+          setError(`GitHub認証エラー: ${errorDescription || 'Unknown error'}`);
           setStatus('認証が拒否されました');
           toast.error('GitHub認証に失敗しました');
           setIsProcessing(false);
           return;
         }
         
-        if (!code) {
-          setError('認証コードが提供されていません');
-          setStatus('エラー: 認証コードがありません');
-          toast.error('認証に失敗しました: コードがありません');
-          setIsProcessing(false);
-          return;
-        }
-
-        // Process the authorization code
-        setStatus('GitHubと通信中...');
-        const success = await handleAuthCallback(code);
+        // With Supabase, the session should already be established if auth was successful
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (success) {
+        if (session) {
           setStatus('認証成功！リダイレクト中...');
           toast.success('GitHubへのログインに成功しました');
           setTimeout(() => navigate('/'), 1000);
         } else {
-          setError('アクセストークンの取得に失敗しました');
+          // If we don't have a session but no explicit error either, something went wrong
+          setError('認証中にエラーが発生しました');
           setStatus('認証に失敗しました');
-          toast.error('GitHubへの認証に失敗しました');
+          toast.error('GitHub認証に失敗しました');
           setIsProcessing(false);
         }
       } catch (error) {
