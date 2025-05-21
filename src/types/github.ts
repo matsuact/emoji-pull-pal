@@ -55,10 +55,6 @@ export interface GithubUser {
 }
 
 export type SortOption = 
-  | "newest" 
-  | "oldest" 
-  | "most-comments" 
-  | "least-comments" 
-  | "updated-desc" 
-  | "updated-asc" 
-  | "popularity";
+  | "newest"  // created (desc)
+  | "oldest"  // created (asc)
+  | "updated"; // updated (desc)

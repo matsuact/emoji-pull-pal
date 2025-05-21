@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PullRequest, SortOption } from '@/types/github';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,9 +13,7 @@ import {
   SortDesc, 
   MessageSquare, 
   Search,
-  AlertCircle,
-  Clock,
-  Star
+  Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -116,34 +113,10 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
                     作成日時（古い順）
                   </div>
                 </SelectItem>
-                <SelectItem value="updated-desc">
+                <SelectItem value="updated">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
                     更新日時（新しい順）
-                  </div>
-                </SelectItem>
-                <SelectItem value="updated-asc">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    更新日時（古い順）
-                  </div>
-                </SelectItem>
-                <SelectItem value="most-comments">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    コメント（多い順）
-                  </div>
-                </SelectItem>
-                <SelectItem value="least-comments">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    コメント（少ない順）
-                  </div>
-                </SelectItem>
-                <SelectItem value="popularity">
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4" />
-                    人気順
                   </div>
                 </SelectItem>
               </SelectContent>
