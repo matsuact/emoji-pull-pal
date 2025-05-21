@@ -60,9 +60,9 @@ export const fetchPullRequests = async (
     }
     
     const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
-    const response = await fetch(url, {
-      headers: await getAuthHeaders()
-    });
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(url, { headers });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch pull requests: ${response.status}`);
@@ -108,9 +108,8 @@ export const fetchPullRequests = async (
 
 export const fetchPullRequestDetails = async (owner: string, repo: string, prNumber: number): Promise<PullRequestDetails> => {
   try {
-    const response = await fetch(`${BASE_URL}/repos/${owner}/${repo}/pulls/${prNumber}`, {
-      headers: getAuthHeaders()
-    });
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/repos/${owner}/${repo}/pulls/${prNumber}`, { headers });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch pull request details: ${response.status}`);
@@ -141,9 +140,8 @@ export const fetchPullRequestDetails = async (owner: string, repo: string, prNum
 export const fetchPullRequestComments = async (owner: string, repo: string, prNumber: number): Promise<Comment[]> => {
   try {
     const issueCommentsUrl = `${BASE_URL}/repos/${owner}/${repo}/issues/${prNumber}/comments`;
-    const response = await fetch(issueCommentsUrl, {
-      headers: getAuthHeaders()
-    });
+    const headers = await getAuthHeaders();
+    const response = await fetch(issueCommentsUrl, { headers });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch comments: ${response.status}`);
@@ -187,12 +185,12 @@ export const addReaction = async (
     }
     
     const url = `${BASE_URL}/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`;
+    const headers = await getAuthHeaders();
+    headers["Accept"] = "application/vnd.github.squirrel-girl-preview+json";
+    
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        ...await getAuthHeaders(),
-        "Accept": "application/vnd.github.squirrel-girl-preview+json"
-      },
+      headers,
       body: JSON.stringify({ content: reaction })
     });
     

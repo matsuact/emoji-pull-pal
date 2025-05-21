@@ -98,23 +98,33 @@ export const getUser = async (): Promise<GithubUser | null> => {
     
     if (!session) return null;
     
-    // Get user profile from Supabase
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('login, avatar_url, name')
-      .eq('id', session.user.id)
-      .single();
-    
-    if (error || !data) {
-      console.error("Error fetching user profile:", error);
-      return null;
-    }
-    
+    // Get user profile from user metadata as fallback
     const githubUser: GithubUser = {
-      login: data.login || session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
-      avatar_url: data.avatar_url || session.user.user_metadata.avatar_url,
-      name: data.name || session.user.user_metadata.name
+      login: session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
+      avatar_url: session.user.user_metadata.avatar_url,
+      name: session.user.user_metadata.name
     };
+    
+    // Try to get from profiles table if available
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username, avatar_url, full_name')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (data && !error) {
+        // If we have profile data, use it
+        return {
+          login: data.username || githubUser.login,
+          avatar_url: data.avatar_url || githubUser.avatar_url,
+          name: data.full_name || githubUser.name
+        };
+      }
+    } catch (profileError) {
+      console.error("Error fetching profile:", profileError);
+      // Fall back to metadata if profile fetch fails
+    }
     
     return githubUser;
   } catch (error) {
@@ -131,5 +141,10 @@ export const cleanupAuthState = async () => {
   localStorage.removeItem("github_access_token");
   localStorage.removeItem("github_user");
   
-  // Supabase will handle its own auth state
+  // Clean up all Supabase auth keys from localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
 };

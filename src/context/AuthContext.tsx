@@ -28,22 +28,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const refreshUserData = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('login, avatar_url, name')
-        .eq('id', userId)
-        .single();
+      // Get user metadata from session
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (error || !data) {
-        console.error("Error fetching user profile:", error);
-        return null;
+      if (!session) return null;
+      
+      // Create a GitHub user object from metadata
+      const githubUser: GithubUser = {
+        login: session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
+        avatar_url: session.user.user_metadata.avatar_url,
+        name: session.user.user_metadata.name
+      };
+      
+      // Try to get from profiles table if available
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username, avatar_url, full_name')
+          .eq('id', userId)
+          .single();
+        
+        if (data && !error) {
+          // If we have profile data, use it
+          return {
+            login: data.username || githubUser.login,
+            avatar_url: data.avatar_url || githubUser.avatar_url,
+            name: data.full_name || githubUser.name
+          };
+        }
+      } catch (profileError) {
+        console.error("Error fetching profile:", profileError);
+        // Fall back to metadata
       }
       
-      return {
-        login: data.login,
-        avatar_url: data.avatar_url,
-        name: data.name
-      };
+      return githubUser;
     } catch (error) {
       console.error("Error refreshing user data:", error);
       return null;
@@ -66,13 +84,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               const userData = await refreshUserData(session.user.id);
               if (userData) {
                 setUser(userData);
-              } else {
-                // Fallback to metadata if profile not yet created
-                setUser({
-                  login: session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
-                  avatar_url: session.user.user_metadata.avatar_url,
-                  name: session.user.user_metadata.name
-                });
               }
             }, 0);
           }
@@ -93,13 +104,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const userData = await refreshUserData(session.user.id);
           if (userData) {
             setUser(userData);
-          } else {
-            // Fallback to metadata if profile not yet created
-            setUser({
-              login: session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
-              avatar_url: session.user.user_metadata.avatar_url,
-              name: session.user.user_metadata.name
-            });
           }
         }
       } catch (error) {
