@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { GithubUser } from '@/types/github';
 
@@ -37,15 +36,8 @@ export const loginWithGithub = async () => {
  */
 export const handleAuthCallback = async (): Promise<boolean> => {
   try {
-    // Check for hash fragment from OAuth redirect
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const access_token = hashParams.get('access_token');
-    
-    if (access_token) {
-      console.log("Found access token in URL hash");
-    }
-    
-    // Check if we have a session
+    // Supabase automatically extracts the token from the URL
+    // Just check if we have a session
     const { data: { session } } = await supabase.auth.getSession();
     return !!session;
   } catch (error) {

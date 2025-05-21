@@ -14,7 +14,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
     storage: localStorage,
-    flowType: 'implicit',
-    detectSessionInUrl: true
+    flowType: 'pkce', // Change from 'implicit' to 'pkce' for better security
+    detectSessionInUrl: true,
+    redirect_to: window.location.origin + '/auth/callback' // Explicitly set the redirect URL
   }
 });

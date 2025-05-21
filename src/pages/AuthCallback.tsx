@@ -32,6 +32,11 @@ const AuthCallback = () => {
           return;
         }
         
+        // Check if we have auth data in the fragment
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log("Found auth data in URL hash, Supabase will handle this automatically");
+        }
+        
         // With Supabase, the session should already be established if auth was successful
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
