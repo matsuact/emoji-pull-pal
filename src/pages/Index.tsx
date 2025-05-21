@@ -8,6 +8,7 @@ import { fetchPullRequests } from '@/services/githubService';
 import { SortOption } from '@/types/github';
 import LoginButton from '@/components/LoginButton';
 import { useAuth } from '@/context/AuthContext';
+import SearchBar from '@/components/SearchBar';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Index = () => {
   const [repository, setRepository] = useState<{ owner: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [searchQuery, setSearchQuery] = useState("");
   const perPage = 10;
 
   // On mount, check if we have a stored repository
@@ -26,9 +28,9 @@ const Index = () => {
   }, []);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: repository ? ['pullRequests', repository.owner, repository.name, currentPage, perPage, sortOption] : null,
+    queryKey: repository ? ['pullRequests', repository.owner, repository.name, currentPage, perPage, sortOption, searchQuery] : null,
     queryFn: repository ? 
-      () => fetchPullRequests(repository.owner, repository.name, currentPage, perPage, sortOption) : 
+      () => fetchPullRequests(repository.owner, repository.name, currentPage, perPage, sortOption, searchQuery) : 
       () => Promise.resolve({pullRequests: [], totalCount: 0}),
     enabled: !!repository
   });
@@ -37,6 +39,7 @@ const Index = () => {
     const newRepo = { owner, name: repo };
     setRepository(newRepo);
     setCurrentPage(1); // Reset to first page
+    setSearchQuery(""); // Clear search query when changing repos
     
     // Store repository in localStorage for persistence
     localStorage.setItem('current-repository', JSON.stringify(newRepo));
@@ -53,6 +56,11 @@ const Index = () => {
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
     setCurrentPage(1); // Reset to first page when sort changes
+  };
+  
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when search changes
   };
 
   return (
@@ -75,6 +83,16 @@ const Index = () => {
             <p className="text-github-link">
               {repository.owner}/{repository.name}
             </p>
+          </div>
+        )}
+
+        {repository && (
+          <div className="mb-4">
+            <SearchBar 
+              onSearch={handleSearch} 
+              initialQuery={searchQuery}
+              placeholder="プルリクエストをタイトルで検索..."
+            />
           </div>
         )}
 

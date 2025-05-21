@@ -32,7 +32,8 @@ export const fetchPullRequests = async (
   repo: string, 
   page: number = 1, 
   perPage: number = 10,
-  sort: SortOption = "newest"
+  sort: SortOption = "newest",
+  searchQuery: string = ""
 ): Promise<{pullRequests: PullRequest[], totalCount: number}> => {
   try {
     // Convert our sort option to GitHub API parameters
@@ -59,8 +60,17 @@ export const fetchPullRequests = async (
         break;
     }
     
+    // Build query string with search if provided
+    let queryParams = `state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
+    
+    // Add search query if provided
+    if (searchQuery) {
+      // For GitHub API, you need to search using q parameter
+      queryParams += `&q=${encodeURIComponent(searchQuery)}+repo:${owner}/${repo}+is:pr`;
+    }
+    
     // GitHub API endpoint for pull requests with sort parameters
-    const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
+    const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?${queryParams}`;
     const headers = await getAuthHeaders();
     
     const response = await fetch(url, { headers });

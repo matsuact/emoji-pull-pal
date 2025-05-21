@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PullRequest, SortOption } from '@/types/github';
 import { formatDistanceToNow } from 'date-fns';
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Filter, SortDesc, MessageSquare } from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter, SortDesc, MessageSquare, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Pagination,
@@ -71,7 +72,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
   return (
     <div className="space-y-4 w-full mx-auto max-w-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">プルリクエスト</h2>
+        <h2 className="text-xl font-bold">プルリクエスト {totalCount > 0 && <span className="text-sm font-normal">（全{totalCount}件）</span>}</h2>
         
         <div className="flex items-center gap-2">
           <Button
@@ -124,7 +125,15 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
       </div>
       
       {pullRequests.length === 0 ? (
-        <Card className="p-4 text-center">プルリクエストが見つかりません</Card>
+        <Card className="p-4">
+          <div className="text-center flex flex-col items-center py-8">
+            <Search className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-medium mb-2">プルリクエストが見つかりません</h3>
+            <p className="text-muted-foreground">
+              検索条件を変更するか、別のリポジトリを試してください
+            </p>
+          </div>
+        </Card>
       ) : (
         <div className="space-y-2">
           {pullRequests.map((pr) => (
