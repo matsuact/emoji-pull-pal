@@ -9,6 +9,7 @@ import { SortOption } from '@/types/github';
 import LoginButton from '@/components/LoginButton';
 import { useAuth } from '@/context/AuthContext';
 import SearchBar from '@/components/SearchBar';
+import { toast } from '@/components/ui/sonner';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -27,13 +28,23 @@ const Index = () => {
     }
   }, []);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, isError } = useQuery({
     queryKey: repository ? ['pullRequests', repository.owner, repository.name, currentPage, perPage, sortOption, searchQuery] : null,
     queryFn: repository ? 
       () => fetchPullRequests(repository.owner, repository.name, currentPage, perPage, sortOption, searchQuery) : 
       () => Promise.resolve({pullRequests: [], totalCount: 0}),
-    enabled: !!repository
+    enabled: !!repository,
+    retry: false
   });
+
+  // Show error toast if there's an API error
+  useEffect(() => {
+    if (isError && error) {
+      toast.error("エラーが発生しました", {
+        description: `プルリクエストの取得に失敗しました: ${(error as Error).message}`,
+      });
+    }
+  }, [isError, error]);
 
   const handleRepositorySubmit = (owner: string, repo: string) => {
     const newRepo = { owner, name: repo };
@@ -109,13 +120,13 @@ const Index = () => {
 
         {isLoading && <div className="text-center p-4">プルリクエストを読み込み中...</div>}
 
-        {error && (
+        {isError && (
           <div className="text-center p-4 text-red-500">
             プルリクエストの読み込みエラー。リポジトリ名を確認してもう一度お試しください。
           </div>
         )}
 
-        {!isLoading && !error && repository && data && (
+        {!isLoading && !isError && repository && data && (
           <PullRequestList
             pullRequests={data.pullRequests}
             onSelectPR={handleSelectPR}

@@ -2,12 +2,22 @@
 import React, { useState } from 'react';
 import { PullRequest, SortOption } from '@/types/github';
 import { formatDistanceToNow } from 'date-fns';
-import { ja } from 'date-fns/locale/ja';
+import { ja } from 'date-fns/locale';
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Filter, SortDesc, MessageSquare, Search } from "lucide-react";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Filter, 
+  SortDesc, 
+  MessageSquare, 
+  Search,
+  AlertCircle,
+  Clock,
+  Star
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Pagination,
@@ -97,25 +107,43 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
                 <SelectItem value="newest">
                   <div className="flex items-center gap-2">
                     <SortDesc className="h-4 w-4" />
-                    最新順
+                    作成日時（新しい順）
                   </div>
                 </SelectItem>
                 <SelectItem value="oldest">
                   <div className="flex items-center gap-2">
                     <SortDesc className="h-4 w-4 rotate-180" />
-                    古い順
+                    作成日時（古い順）
+                  </div>
+                </SelectItem>
+                <SelectItem value="updated-desc">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    更新日時（新しい順）
+                  </div>
+                </SelectItem>
+                <SelectItem value="updated-asc">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    更新日時（古い順）
                   </div>
                 </SelectItem>
                 <SelectItem value="most-comments">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
-                    コメント多い順
+                    コメント（多い順）
                   </div>
                 </SelectItem>
                 <SelectItem value="least-comments">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
-                    コメント少ない順
+                    コメント（少ない順）
+                  </div>
+                </SelectItem>
+                <SelectItem value="popularity">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4" />
+                    人気順
                   </div>
                 </SelectItem>
               </SelectContent>

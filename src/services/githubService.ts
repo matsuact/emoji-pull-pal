@@ -1,4 +1,3 @@
-
 import { PullRequest, PullRequestDetails, Comment, Reaction, SortOption } from "../types/github";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -45,6 +44,18 @@ export const fetchPullRequests = async (
         apiSort = "created";
         direction = "asc";
         break;
+      case "updated-desc":
+        apiSort = "updated";
+        direction = "desc";
+        break;
+      case "updated-asc":
+        apiSort = "updated";
+        direction = "asc";
+        break;
+      case "popularity":
+        apiSort = "popularity";
+        direction = "desc";
+        break;
       case "most-comments":
         apiSort = "comments";
         direction = "desc";
@@ -60,17 +71,13 @@ export const fetchPullRequests = async (
         break;
     }
     
-    // Build query string with search if provided
-    let queryParams = `state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
-    
-    // Add search query if provided
+    // Handle search query separately from regular pull request fetching
     if (searchQuery) {
-      // For GitHub API, you need to search using q parameter
-      queryParams += `&q=${encodeURIComponent(searchQuery)}+repo:${owner}/${repo}+is:pr`;
+      return await fetchPullRequestsWithSearch(owner, repo, searchQuery, page, perPage, apiSort, direction);
     }
     
-    // GitHub API endpoint for pull requests with sort parameters
-    const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?${queryParams}`;
+    // Regular PR fetching without search
+    const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
     const headers = await getAuthHeaders();
     
     const response = await fetch(url, { headers });
@@ -91,11 +98,10 @@ export const fetchPullRequests = async (
     }
     
     // If link header is missing, assume we're on the last page
-    if (totalCount === 0) {
-      totalCount = (page - 1) * perPage + (await response.json()).length;
-    }
-    
     const data = await response.json();
+    if (totalCount === 0) {
+      totalCount = (page - 1) * perPage + data.length;
+    }
     
     const pullRequests = data.map((pr: any) => ({
       id: pr.id,
@@ -114,6 +120,58 @@ export const fetchPullRequests = async (
     return { pullRequests, totalCount };
   } catch (error) {
     console.error("Error fetching pull requests:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch pull requests with search query
+ */
+const fetchPullRequestsWithSearch = async (
+  owner: string,
+  repo: string,
+  query: string,
+  page: number = 1,
+  perPage: number = 10,
+  sort: string = "created",
+  direction: string = "desc"
+): Promise<{pullRequests: PullRequest[], totalCount: number}> => {
+  try {
+    // GitHub Search API requires a different endpoint and format
+    const searchQuery = encodeURIComponent(`${query} repo:${owner}/${repo} is:pr`);
+    const url = `${BASE_URL}/search/issues?q=${searchQuery}&sort=${sort}&order=${direction}&page=${page}&per_page=${perPage}`;
+    
+    const headers = await getAuthHeaders();
+    const response = await fetch(url, { headers });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to search pull requests: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Search API gives us total_count directly
+    const totalCount = data.total_count || 0;
+    
+    // Map search results to our PullRequest format
+    const pullRequests = data.items.map((item: any) => ({
+      id: item.id,
+      number: item.number,
+      title: item.title,
+      // Search API doesn't indicate if PR is merged, only open/closed
+      state: item.state,
+      user: {
+        login: item.user.login,
+        avatar_url: item.user.avatar_url
+      },
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      comments: item.comments || 0
+    }));
+    
+    return { pullRequests, totalCount };
+  } catch (error) {
+    console.error("Error searching pull requests:", error);
     throw error;
   }
 };

@@ -54,4 +54,11 @@ export interface GithubUser {
   name?: string;
 }
 
-export type SortOption = "newest" | "oldest" | "most-comments" | "least-comments";
+export type SortOption = 
+  | "newest" 
+  | "oldest" 
+  | "most-comments" 
+  | "least-comments" 
+  | "updated-desc" 
+  | "updated-asc" 
+  | "popularity";
