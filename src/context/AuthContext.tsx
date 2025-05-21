@@ -40,29 +40,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         name: session.user.user_metadata.name
       };
       
-      // Try to get from profiles table if available
-      try {
-        // Using .eq with UUID string type conversion, and proper error handling
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('username, avatar_url, full_name')
-          .eq('id', userId as any)
-          .single();
-        
-        // Type guard to check if data is valid and not an error
-        if (data && !error && typeof data === 'object') {
-          // Use bracket notation to access properties safely
-          return {
-            login: data['username'] || githubUser.login,
-            avatar_url: data['avatar_url'] || githubUser.avatar_url,
-            name: data['full_name'] || githubUser.name
-          };
-        }
-      } catch (profileError) {
-        console.error("Error fetching profile:", profileError);
-        // Fall back to metadata
-      }
-      
       return githubUser;
     } catch (error) {
       console.error("Error refreshing user data:", error);

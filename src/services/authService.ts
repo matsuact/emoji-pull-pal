@@ -101,34 +101,12 @@ export const getUser = async (): Promise<GithubUser | null> => {
     
     if (!session) return null;
     
-    // Get user profile from user metadata as fallback
+    // Get user profile from user metadata
     const githubUser: GithubUser = {
       login: session.user.user_metadata.user_name || session.user.user_metadata.preferred_username,
       avatar_url: session.user.user_metadata.avatar_url,
       name: session.user.user_metadata.name
     };
-    
-    // Try to get from profiles table if available
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username, avatar_url, full_name')
-        .eq('id', session.user.id as any)
-        .single();
-      
-      // Type guard to check if data is valid and not an error
-      if (data && !error && typeof data === 'object') {
-        // Safely access properties with optional chaining
-        return {
-          login: data['username'] || githubUser.login,
-          avatar_url: data['avatar_url'] || githubUser.avatar_url,
-          name: data['full_name'] || githubUser.name
-        };
-      }
-    } catch (profileError) {
-      console.error("Error fetching profile:", profileError);
-      // Fall back to metadata if profile fetch fails
-    }
     
     return githubUser;
   } catch (error) {
