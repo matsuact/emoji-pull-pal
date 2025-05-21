@@ -59,6 +59,7 @@ export const fetchPullRequests = async (
         break;
     }
     
+    // GitHub API endpoint for pull requests with sort parameters
     const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
     const headers = await getAuthHeaders();
     
@@ -96,7 +97,8 @@ export const fetchPullRequests = async (
         avatar_url: pr.user.avatar_url
       },
       created_at: pr.created_at,
-      updated_at: pr.updated_at
+      updated_at: pr.updated_at,
+      comments: pr.comments || 0 // Make sure we're also returning the comments count
     }));
     
     return { pullRequests, totalCount };

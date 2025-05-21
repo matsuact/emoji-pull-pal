@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Filter, SortDesc } from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter, SortDesc, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Pagination,
@@ -69,7 +69,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
   const totalPages = Math.ceil(totalCount / perPage);
 
   return (
-    <div className="space-y-4 w-full max-w-2xl">
+    <div className="space-y-4 w-full mx-auto max-w-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
         <h2 className="text-xl font-bold">Pull Requests</h2>
         
@@ -105,8 +105,18 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
                     Oldest
                   </div>
                 </SelectItem>
-                <SelectItem value="most-comments">Most comments</SelectItem>
-                <SelectItem value="least-comments">Least comments</SelectItem>
+                <SelectItem value="most-comments">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Most comments
+                  </div>
+                </SelectItem>
+                <SelectItem value="least-comments">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Least comments
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -128,8 +138,15 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-medium text-lg">{pr.title}</h3>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    #{pr.number} opened {formatDistanceToNow(new Date(pr.created_at), { addSuffix: true })} by {pr.user.login}
+                  <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                    <span>#{pr.number}</span>
+                    <span>opened {formatDistanceToNow(new Date(pr.created_at), { addSuffix: true })} by {pr.user.login}</span>
+                    {pr.comments !== undefined && pr.comments > 0 && (
+                      <span className="flex items-center gap-1">
+                        <MessageSquare className="h-4 w-4" />
+                        {pr.comments}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -145,7 +162,6 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
         <Pagination className="mt-4">
           <PaginationContent>
             <PaginationItem>
-              {/* Fix: Don't use 'as' prop with Button, use PaginationLink directly */}
               <PaginationLink
                 onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                 className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
@@ -183,7 +199,6 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
             })}
 
             <PaginationItem>
-              {/* Fix: Don't use 'as' prop with Button, use PaginationLink directly */}
               <PaginationLink
                 onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                 className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}

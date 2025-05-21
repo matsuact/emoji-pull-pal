@@ -15,6 +15,7 @@ export interface PullRequest {
   };
   created_at: string;
   updated_at: string;
+  comments?: number; // コメント数を追加
 }
 
 export interface PullRequestDetails extends PullRequest {
