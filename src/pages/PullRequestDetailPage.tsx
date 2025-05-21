@@ -31,7 +31,7 @@ const PullRequestDetailPage: React.FC = () => {
   };
   
   if (!repository || !prNumber) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return <div className="p-8 text-center">読み込み中...</div>;
   }
   
   return (
@@ -42,10 +42,10 @@ const PullRequestDetailPage: React.FC = () => {
           onClick={goBack} 
           className="mb-4"
         >
-          <ChevronLeft className="mr-1 h-4 w-4" /> Back to Pull Requests
+          <ChevronLeft className="mr-1 h-4 w-4" /> プルリクエスト一覧に戻る
         </Button>
         
-        <h2 className="text-lg font-semibold mb-1">Repository</h2>
+        <h2 className="text-lg font-semibold mb-1">リポジトリ</h2>
         <p className="text-github-link">
           {repository.owner}/{repository.name}
         </p>
@@ -56,9 +56,9 @@ const PullRequestDetailPage: React.FC = () => {
       {!isAuthenticated && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
           <p className="flex items-center">
-            <span className="font-medium">Note:</span>
+            <span className="font-medium">注意：</span>
             <span className="ml-2">
-              Login with GitHub to add reactions to comments
+              コメントにリアクションを追加するには、GitHubでログインしてください
             </span>
           </p>
         </div>
@@ -68,12 +68,12 @@ const PullRequestDetailPage: React.FC = () => {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" className="w-full mb-4">
-              Repository Information
+              リポジトリ情報
             </Button>
           </SheetTrigger>
           <SheetContent side="left">
             <div className="py-4">
-              <h2 className="text-lg font-semibold mb-1">Repository</h2>
+              <h2 className="text-lg font-semibold mb-1">リポジトリ</h2>
               <p className="text-github-link">
                 {repository.owner}/{repository.name}
               </p>

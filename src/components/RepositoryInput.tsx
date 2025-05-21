@@ -35,13 +35,13 @@ const RepositoryInput: React.FC<RepositoryInputProps> = ({ onSubmit }) => {
       }
       
       if (!owner || !repo) {
-        toast.error("Invalid repository format. Please use owner/repo format or a GitHub URL");
+        toast.error("無効なリポジトリ形式です。owner/repo形式またはGitHub URLを使用してください");
         return;
       }
       
       onSubmit(owner, repo);
     } catch (error) {
-      toast.error("Error parsing repository input");
+      toast.error("リポジトリ入力の解析エラー");
     }
   };
 
@@ -51,11 +51,11 @@ const RepositoryInput: React.FC<RepositoryInputProps> = ({ onSubmit }) => {
         type="text"
         value={repoUrl}
         onChange={(e) => setRepoUrl(e.target.value)}
-        placeholder="Enter GitHub repository (e.g., owner/repo or full URL)"
+        placeholder="GitHubリポジトリを入力（例：owner/repo または完全なURL）"
         className="flex-grow"
       />
       <Button type="submit" className="bg-github-button hover:bg-github-buttonHover">
-        Load Pull Requests
+        プルリクエストを読み込む
       </Button>
     </form>
   );

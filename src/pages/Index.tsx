@@ -59,7 +59,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <header className="p-4 bg-card border-b sticky top-0 z-10">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold">GitHub PR Viewer</h1>
+          <h1 className="text-2xl font-bold">GitHub PR ビューア</h1>
           <LoginButton />
         </div>
       </header>
@@ -71,7 +71,7 @@ const Index = () => {
 
         {repository && (
           <div className="mb-4">
-            <h2 className="text-lg font-semibold mb-1">Repository</h2>
+            <h2 className="text-lg font-semibold mb-1">リポジトリ</h2>
             <p className="text-github-link">
               {repository.owner}/{repository.name}
             </p>
@@ -81,19 +81,19 @@ const Index = () => {
         {!isAuthenticated && repository && (
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
             <p className="flex items-center">
-              <span className="font-medium">Note:</span>
+              <span className="font-medium">注意：</span>
               <span className="ml-2">
-                Login with GitHub for additional features like adding reactions
+                リアクション追加などの機能を使用するには、GitHubでログインしてください
               </span>
             </p>
           </div>
         )}
 
-        {isLoading && <div className="text-center p-4">Loading pull requests...</div>}
+        {isLoading && <div className="text-center p-4">プルリクエストを読み込み中...</div>}
 
         {error && (
           <div className="text-center p-4 text-red-500">
-            Error loading pull requests. Please check the repository name and try again.
+            プルリクエストの読み込みエラー。リポジトリ名を確認してもう一度お試しください。
           </div>
         )}
 

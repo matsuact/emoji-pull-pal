@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
+import { ja } from 'date-fns/locale';
 import { PullRequestDetails, Comment } from '@/types/github';
 import { fetchPullRequestDetails, fetchPullRequestComments, addReaction } from '@/services/githubService';
 import { Smile, Frown, Heart, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
@@ -40,7 +41,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         const prComments = await fetchPullRequestComments(owner, repo, prNumber);
         setComments(prComments);
       } catch (err) {
-        setError("Error loading pull request data");
+        setError("プルリクエストデータの読み込み中にエラーが発生しました");
         console.error(err);
       } finally {
         setLoading(false);
@@ -52,16 +53,16 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
 
   const handleReaction = async (commentId: number, reactionType: string) => {
     if (!isAuthenticated) {
-      toast("Authentication required", {
-        description: "Please login with GitHub to add reactions",
+      toast("認証が必要です", {
+        description: "リアクションを追加するにはGitHubにログインしてください",
       });
       return;
     }
     
     try {
       await addReaction(owner, repo, commentId, reactionType);
-      toast("Reaction added", {
-        description: "Your reaction has been registered (simulated)",
+      toast("リアクション追加", {
+        description: "リアクションが登録されました（シミュレーション）",
       });
       
       // In a real app with proper authentication, we would refetch the comments to get updated reactions
@@ -93,8 +94,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         return comment;
       }));
     } catch (err) {
-      toast("Error", {
-        description: "Failed to add reaction. " + (err as Error).message,
+      toast("エラー", {
+        description: "リアクションの追加に失敗しました。 " + (err as Error).message,
         // The 'variant' property is not recognized by sonner, so we're removing it
       });
     }
@@ -103,24 +104,24 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
   const getStateBadge = (state: string) => {
     switch (state) {
       case 'open':
-        return <Badge className="bg-github-open">Open</Badge>;
+        return <Badge className="bg-github-open">オープン</Badge>;
       case 'merged':
-        return <Badge className="bg-github-merged">Merged</Badge>;
+        return <Badge className="bg-github-merged">マージ済み</Badge>;
       case 'closed':
-        return <Badge className="bg-github-closed">Closed</Badge>;
+        return <Badge className="bg-github-closed">クローズ</Badge>;
       default:
         return null;
     }
   };
 
   if (loading) {
-    return <div className="text-center p-4">Loading pull request details...</div>;
+    return <div className="text-center p-4">プルリクエストの詳細を読み込み中...</div>;
   }
 
   if (error || !prDetails) {
     return (
       <Card className="p-6 text-center">
-        <p className="text-red-500">{error || "Failed to load pull request details"}</p>
+        <p className="text-red-500">{error || "プルリクエストの詳細の読み込みに失敗しました"}</p>
       </Card>
     );
   }
@@ -138,8 +139,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             <img src={prDetails.user.avatar_url} alt={prDetails.user.login} />
           </Avatar>
           <div>
-            <span className="font-medium">{prDetails.user.login}</span> opened this pull request {' '}
-            {formatDistanceToNow(new Date(prDetails.created_at), { addSuffix: true })}
+            <span className="font-medium">{prDetails.user.login}</span>さんが{' '}
+            {formatDistanceToNow(new Date(prDetails.created_at), { addSuffix: true, locale: ja })}にオープン
           </div>
         </div>
         
@@ -147,19 +148,19 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
           {prDetails.body ? (
             <p className="whitespace-pre-line">{prDetails.body}</p>
           ) : (
-            <p className="text-muted-foreground">No description provided</p>
+            <p className="text-muted-foreground">説明はありません</p>
           )}
         </div>
       </Card>
 
       <h2 className="text-xl font-bold mb-2 flex items-center">
         <MessageSquare className="mr-2 h-5 w-5" /> 
-        Conversation
+        会話
       </h2>
       
       {comments.length === 0 ? (
         <Card className="p-4 text-center">
-          <p className="text-muted-foreground">No comments yet</p>
+          <p className="text-muted-foreground">コメントはまだありません</p>
         </Card>
       ) : (
         <div className="space-y-4">
@@ -173,7 +174,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                   <div className="flex justify-between items-center">
                     <h4 className="font-medium">{comment.user.login}</h4>
                     <span className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: ja })}
                     </span>
                   </div>
                   <p className="mt-2 whitespace-pre-line">{comment.body}</p>
@@ -187,7 +188,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       className="text-xs" 
                       onClick={() => handleReaction(comment.id, 'thumbs_up')}
                       disabled={!isAuthenticated}
-                      title={isAuthenticated ? "Add 👍 reaction" : "Login to add reactions"}
+                      title={isAuthenticated ? "👍 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <ThumbsUp className="h-4 w-4 mr-1" />
                       {comment.reactions?.["+1"] || 0}
@@ -198,7 +199,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'thumbs_down')}
                       disabled={!isAuthenticated}
-                      title={isAuthenticated ? "Add 👎 reaction" : "Login to add reactions"}
+                      title={isAuthenticated ? "👎 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <ThumbsDown className="h-4 w-4 mr-1" />
                       {comment.reactions?.["-1"] || 0}
@@ -209,7 +210,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'smile')}
                       disabled={!isAuthenticated}
-                      title={isAuthenticated ? "Add 😄 reaction" : "Login to add reactions"}
+                      title={isAuthenticated ? "😄 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <Smile className="h-4 w-4 mr-1" />
                       {comment.reactions?.smile || 0}
@@ -220,7 +221,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'frown')}
                       disabled={!isAuthenticated}
-                      title={isAuthenticated ? "Add 😕 reaction" : "Login to add reactions"}
+                      title={isAuthenticated ? "😕 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <Frown className="h-4 w-4 mr-1" />
                       {comment.reactions?.frown || 0}
@@ -231,7 +232,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       className="text-xs"
                       onClick={() => handleReaction(comment.id, 'heart')}
                       disabled={!isAuthenticated}
-                      title={isAuthenticated ? "Add ❤️ reaction" : "Login to add reactions"}
+                      title={isAuthenticated ? "❤️ リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <Heart className="h-4 w-4 mr-1" />
                       {comment.reactions?.heart || 0}

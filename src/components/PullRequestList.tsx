@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { PullRequest, SortOption } from '@/types/github';
 import { formatDistanceToNow } from 'date-fns';
+import { ja } from 'date-fns/locale';
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,11 +47,11 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
   const getStateBadge = (state: string) => {
     switch (state) {
       case 'open':
-        return <Badge className="bg-github-open">Open</Badge>;
+        return <Badge className="bg-github-open">オープン</Badge>;
       case 'merged':
-        return <Badge className="bg-github-merged">Merged</Badge>;
+        return <Badge className="bg-github-merged">マージ済み</Badge>;
       case 'closed':
-        return <Badge className="bg-github-closed">Closed</Badge>;
+        return <Badge className="bg-github-closed">クローズ</Badge>;
       default:
         return null;
     }
@@ -71,7 +72,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
   return (
     <div className="space-y-4 w-full mx-auto max-w-2xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <h2 className="text-xl font-bold">Pull Requests</h2>
+        <h2 className="text-xl font-bold">プルリクエスト</h2>
         
         <div className="flex items-center gap-2">
           <Button
@@ -81,7 +82,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
             onClick={() => setIsMobileSortOpen(!isMobileSortOpen)}
           >
             <Filter className="h-4 w-4 mr-1" />
-            Sort
+            並び替え
           </Button>
           
           <div className={`${isMobileSortOpen ? 'block' : 'hidden'} md:block`}>
@@ -90,31 +91,31 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
               onValueChange={(value) => onSortChange(value as SortOption)}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder="並び替え" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="newest">
                   <div className="flex items-center gap-2">
                     <SortDesc className="h-4 w-4" />
-                    Newest
+                    最新順
                   </div>
                 </SelectItem>
                 <SelectItem value="oldest">
                   <div className="flex items-center gap-2">
                     <SortDesc className="h-4 w-4 rotate-180" />
-                    Oldest
+                    古い順
                   </div>
                 </SelectItem>
                 <SelectItem value="most-comments">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
-                    Most comments
+                    コメント多い順
                   </div>
                 </SelectItem>
                 <SelectItem value="least-comments">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
-                    Least comments
+                    コメント少ない順
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -124,7 +125,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
       </div>
       
       {pullRequests.length === 0 ? (
-        <Card className="p-4 text-center">No pull requests found</Card>
+        <Card className="p-4 text-center">プルリクエストが見つかりません</Card>
       ) : (
         <div className="space-y-2">
           {pullRequests.map((pr) => (
@@ -140,7 +141,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
                   <h3 className="font-medium text-lg">{pr.title}</h3>
                   <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
                     <span>#{pr.number}</span>
-                    <span>opened {formatDistanceToNow(new Date(pr.created_at), { addSuffix: true })} by {pr.user.login}</span>
+                    <span>{formatDistanceToNow(new Date(pr.created_at), { addSuffix: true, locale: ja })}に{pr.user.login}が作成</span>
                     {pr.comments !== undefined && pr.comments > 0 && (
                       <span className="flex items-center gap-1">
                         <MessageSquare className="h-4 w-4" />
@@ -168,7 +169,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
               >
                 <span className="flex items-center">
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
+                  前へ
                 </span>
               </PaginationLink>
             </PaginationItem>
@@ -204,7 +205,7 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
                 className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
               >
                 <span className="flex items-center">
-                  Next
+                  次へ
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </span>
               </PaginationLink>

@@ -36,12 +36,12 @@ const LoginButton: React.FC = () => {
         {isAuthenticated ? (
           <>
             <LogOut className="h-4 w-4" />
-            <span className="hidden md:inline">Logout</span>
+            <span className="hidden md:inline">ログアウト</span>
           </>
         ) : (
           <>
             <LogIn className="h-4 w-4" />
-            <span>Login with GitHub</span>
+            <span>GitHubでログイン</span>
           </>
         )}
       </Button>
