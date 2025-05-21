@@ -16,6 +16,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     flowType: 'pkce', // Change from 'implicit' to 'pkce' for better security
     detectSessionInUrl: true,
-    redirect_to: window.location.origin + '/auth/callback' // Explicitly set the redirect URL
+    redirectTo: window.location.origin + '/auth/callback' // Fixed property name from redirect_to to redirectTo
   }
 });

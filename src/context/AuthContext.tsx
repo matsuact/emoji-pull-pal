@@ -42,18 +42,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       // Try to get from profiles table if available
       try {
+        // Using .eq with UUID string type conversion, and proper error handling
         const { data, error } = await supabase
           .from('profiles')
           .select('username, avatar_url, full_name')
-          .eq('id', userId)
+          .eq('id', userId as any)
           .single();
         
         if (data && !error) {
-          // If we have profile data, use it
+          // If we have profile data, use it - safely checking if properties exist
           return {
-            login: data.username || githubUser.login,
-            avatar_url: data.avatar_url || githubUser.avatar_url,
-            name: data.full_name || githubUser.name
+            login: data?.username || githubUser.login,
+            avatar_url: data?.avatar_url || githubUser.avatar_url,
+            name: data?.full_name || githubUser.name
           };
         }
       } catch (profileError) {

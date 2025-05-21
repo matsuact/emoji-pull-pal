@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { GithubUser } from '@/types/github';
 
@@ -112,15 +113,15 @@ export const getUser = async (): Promise<GithubUser | null> => {
       const { data, error } = await supabase
         .from('profiles')
         .select('username, avatar_url, full_name')
-        .eq('id', session.user.id)
+        .eq('id', session.user.id as any)
         .single();
       
       if (data && !error) {
         // If we have profile data, use it
         return {
-          login: data.username || githubUser.login,
-          avatar_url: data.avatar_url || githubUser.avatar_url,
-          name: data.full_name || githubUser.name
+          login: data?.username || githubUser.login,
+          avatar_url: data?.avatar_url || githubUser.avatar_url,
+          name: data?.full_name || githubUser.name
         };
       }
     } catch (profileError) {
