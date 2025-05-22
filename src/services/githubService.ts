@@ -31,29 +31,13 @@ export const fetchPullRequests = async (
   repo: string, 
   page: number = 1, 
   perPage: number = 10,
-  sort: SortOption = "newest",
+  sort: SortOption = "created-desc",
   searchQuery: string = ""
 ): Promise<{pullRequests: PullRequest[], totalCount: number}> => {
   try {
     // Convert our sort option to GitHub API parameters
-    let apiSort = "created";
-    let direction = "desc";
-    
-    switch (sort) {
-      case "oldest":
-        apiSort = "created";
-        direction = "asc";
-        break;
-      case "updated":
-        apiSort = "updated";
-        direction = "desc";
-        break;
-      case "newest":
-      default:
-        apiSort = "created";
-        direction = "desc";
-        break;
-    }
+    // Format is "<field>-<direction>" like "created-desc"
+    const [apiSort, direction] = sort.split('-');
     
     // Handle search query separately from regular pull request fetching
     if (searchQuery) {

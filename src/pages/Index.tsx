@@ -16,7 +16,7 @@ const Index = () => {
   const { isAuthenticated } = useAuth();
   const [repository, setRepository] = useState<{ owner: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [sortOption, setSortOption] = useState<SortOption>("created-desc");
   const [searchQuery, setSearchQuery] = useState("");
   const perPage = 10;
 
