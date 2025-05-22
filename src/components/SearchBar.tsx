@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -16,6 +16,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = 'タイトルで検索...' 
 }) => {
   const [query, setQuery] = useState(initialQuery);
+  
+  // Update the query state when initialQuery changes
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

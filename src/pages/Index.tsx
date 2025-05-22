@@ -21,11 +21,30 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const perPage = 10;
 
-  // On mount, check if we have a stored repository
+  // On mount, check if we have stored preferences
   useEffect(() => {
+    // Restore repository
     const storedRepo = localStorage.getItem('current-repository');
     if (storedRepo) {
       setRepository(JSON.parse(storedRepo));
+    }
+
+    // Restore search query
+    const storedSearchQuery = localStorage.getItem('search-query');
+    if (storedSearchQuery) {
+      setSearchQuery(storedSearchQuery);
+    }
+
+    // Restore sort option
+    const storedSortOption = localStorage.getItem('sort-option') as SortOption | null;
+    if (storedSortOption && ["created-desc", "created-asc", "updated-desc", "updated-asc"].includes(storedSortOption)) {
+      setSortOption(storedSortOption as SortOption);
+    }
+
+    // Restore current page
+    const storedPage = localStorage.getItem('current-page');
+    if (storedPage) {
+      setCurrentPage(parseInt(storedPage, 10));
     }
   }, []);
 
@@ -55,6 +74,9 @@ const Index = () => {
     
     // Store repository in localStorage for persistence
     localStorage.setItem('current-repository', JSON.stringify(newRepo));
+    localStorage.removeItem('search-query'); // Reset search query in storage
+    localStorage.setItem('sort-option', "created-desc"); // Reset sort option
+    localStorage.setItem('current-page', "1"); // Reset page
   };
 
   const handleSelectPR = (prNumber: number) => {
@@ -63,16 +85,21 @@ const Index = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    localStorage.setItem('current-page', page.toString());
   };
 
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
     setCurrentPage(1); // Reset to first page when sort changes
+    localStorage.setItem('sort-option', option);
+    localStorage.setItem('current-page', "1"); // Reset page in storage
   };
   
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page when search changes
+    localStorage.setItem('search-query', query);
+    localStorage.setItem('current-page', "1"); // Reset page in storage
   };
 
   const openGitHubRepo = () => {

@@ -26,7 +26,9 @@ const PullRequestDetailPage: React.FC = () => {
     }
   }, [navigate]);
   
+  // Modify the goBack function to preserve the search and navigation state
   const goBack = () => {
+    // Simply go back to index page, all state will be restored from localStorage
     navigate('/');
   };
   
