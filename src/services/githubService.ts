@@ -44,25 +44,9 @@ export const fetchPullRequests = async (
         apiSort = "created";
         direction = "asc";
         break;
-      case "updated-desc":
+      case "updated":
         apiSort = "updated";
         direction = "desc";
-        break;
-      case "updated-asc":
-        apiSort = "updated";
-        direction = "asc";
-        break;
-      case "popularity":
-        apiSort = "popularity";
-        direction = "desc";
-        break;
-      case "most-comments":
-        apiSort = "comments";
-        direction = "desc";
-        break;
-      case "least-comments":
-        apiSort = "comments";
-        direction = "asc";
         break;
       case "newest":
       default:
