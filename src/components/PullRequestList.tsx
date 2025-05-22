@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PullRequest, SortOption } from '@/types/github';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,12 +11,12 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Filter, 
-  SortDesc, 
   MessageSquare, 
   Search,
-  Clock,
+  Calendar,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  CalendarClock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -37,6 +38,8 @@ interface PullRequestListProps {
   onSortChange: (sortOption: SortOption) => void;
   sortOption: SortOption;
   perPage: number;
+  repoOwner?: string;
+  repoName?: string;
 }
 
 const PullRequestList: React.FC<PullRequestListProps> = ({
@@ -48,7 +51,9 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
   onPageChange,
   onSortChange,
   sortOption,
-  perPage
+  perPage,
+  repoOwner,
+  repoName
 }) => {
   const navigate = useNavigate();
   const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
@@ -76,22 +81,13 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
     }
   };
 
+  const handleRepoClick = () => {
+    if (repoOwner && repoName) {
+      window.open(`https://github.com/${repoOwner}/${repoName}`, '_blank');
+    }
+  };
+
   const totalPages = Math.ceil(totalCount / perPage);
-
-  // Sort option display names for better readability
-  const sortOptionLabels: Record<SortOption, string> = {
-    "created-desc": "作成日（新しい順）",
-    "created-asc": "作成日（古い順）",
-    "updated-desc": "更新日（新しい順）",
-    "updated-asc": "更新日（古い順）",
-    "created_at-desc": "作成日時（新しい順）",
-    "created_at-asc": "作成日時（古い順）"
-  };
-
-  // Icons for each sort direction
-  const getSortDirectionIcon = (sortOption: SortOption) => {
-    return sortOption.endsWith('-asc') ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
-  };
 
   return (
     <div className="space-y-4 w-full mx-auto max-w-2xl">
@@ -120,44 +116,30 @@ const PullRequestList: React.FC<PullRequestListProps> = ({
               <SelectContent>
                 <SelectItem value="created-desc">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Calendar className="h-4 w-4" />
                     <ArrowDown className="h-4 w-4" />
                     作成日（新しい順）
                   </div>
                 </SelectItem>
                 <SelectItem value="created-asc">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Calendar className="h-4 w-4" />
                     <ArrowUp className="h-4 w-4" />
                     作成日（古い順）
                   </div>
                 </SelectItem>
                 <SelectItem value="updated-desc">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <CalendarClock className="h-4 w-4" />
                     <ArrowDown className="h-4 w-4" />
                     更新日（新しい順）
                   </div>
                 </SelectItem>
                 <SelectItem value="updated-asc">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <CalendarClock className="h-4 w-4" />
                     <ArrowUp className="h-4 w-4" />
                     更新日（古い順）
-                  </div>
-                </SelectItem>
-                <SelectItem value="created_at-desc">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <ArrowDown className="h-4 w-4" />
-                    作成日時（新しい順）
-                  </div>
-                </SelectItem>
-                <SelectItem value="created_at-asc">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <ArrowUp className="h-4 w-4" />
-                    作成日時（古い順）
                   </div>
                 </SelectItem>
               </SelectContent>

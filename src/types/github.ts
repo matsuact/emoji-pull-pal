@@ -58,6 +58,4 @@ export type SortOption =
   | "created-desc"  // 作成日（降順：新しい順）
   | "created-asc"   // 作成日（昇順：古い順）
   | "updated-desc"  // 更新日（降順：新しい順）
-  | "updated-asc"   // 更新日（昇順：古い順）
-  | "created_at-desc" // created_at（降順：新しい順）
-  | "created_at-asc"; // created_at（昇順：古い順）
+  | "updated-asc";  // 更新日（昇順：古い順）

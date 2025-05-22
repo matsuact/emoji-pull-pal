@@ -1,3 +1,4 @@
+
 import { PullRequest, PullRequestDetails, Comment, Reaction, SortOption } from "../types/github";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,15 +38,15 @@ export const fetchPullRequests = async (
   try {
     // Convert our sort option to GitHub API parameters
     // Format is "<field>-<direction>" like "created-desc"
-    const [apiSort, direction] = sort.split('-');
+    const [sortField, direction] = sort.split('-');
     
     // Handle search query separately from regular pull request fetching
     if (searchQuery) {
-      return await fetchPullRequestsWithSearch(owner, repo, searchQuery, page, perPage, apiSort, direction);
+      return await fetchPullRequestsWithSearch(owner, repo, searchQuery, page, perPage, sortField, direction);
     }
     
     // Regular PR fetching without search
-    const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${apiSort}&direction=${direction}&page=${page}&per_page=${perPage}`;
+    const url = `${BASE_URL}/repos/${owner}/${repo}/pulls?state=all&sort=${sortField}&direction=${direction}&page=${page}&per_page=${perPage}`;
     const headers = await getAuthHeaders();
     
     const response = await fetch(url, { headers });

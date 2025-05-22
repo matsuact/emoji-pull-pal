@@ -10,6 +10,7 @@ import LoginButton from '@/components/LoginButton';
 import { useAuth } from '@/context/AuthContext';
 import SearchBar from '@/components/SearchBar';
 import { toast } from '@/components/ui/sonner';
+import { ExternalLink } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -74,6 +75,12 @@ const Index = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
+  const openGitHubRepo = () => {
+    if (repository) {
+      window.open(`https://github.com/${repository.owner}/${repository.name}`, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="p-4 bg-card border-b sticky top-0 z-10">
@@ -91,9 +98,14 @@ const Index = () => {
         {repository && (
           <div className="mb-4">
             <h2 className="text-lg font-semibold mb-1">リポジトリ</h2>
-            <p className="text-github-link">
-              {repository.owner}/{repository.name}
-            </p>
+            <button 
+              onClick={openGitHubRepo}
+              className="text-github-link hover:underline flex items-center"
+              aria-label="GitHubでリポジトリを開く"
+            >
+              <span>{repository.owner}/{repository.name}</span>
+              <ExternalLink className="h-4 w-4 ml-1" />
+            </button>
           </div>
         )}
 
@@ -136,6 +148,8 @@ const Index = () => {
             onSortChange={handleSortChange}
             sortOption={sortOption}
             perPage={perPage}
+            repoOwner={repository.owner}
+            repoName={repository.name}
           />
         )}
       </main>
