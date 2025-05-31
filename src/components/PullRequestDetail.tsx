@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale/ja';
 import { PullRequestDetails, Comment } from '@/types/github';
-import { fetchPullRequestDetails, fetchPullRequestComments, addReaction } from '@/services/githubService';
+import { fetchPullRequestDetails, fetchPullRequestComments, fetchPullRequestReactions, addReaction } from '@/services/githubService';
 import { Smile, Frown, Heart, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from '@/context/AuthContext';
@@ -41,6 +41,10 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         
         const prComments = await fetchPullRequestComments(owner, repo, prNumber);
         setComments(prComments);
+        
+        // Fetch PR reactions
+        const reactions = await fetchPullRequestReactions(owner, repo, prNumber);
+        setPrReactions(reactions);
       } catch (err) {
         setError("プルリクエストデータの読み込み中にエラーが発生しました");
         console.error(err);
@@ -63,14 +67,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     try {
       console.log(`PR Reaction Debug: ${reactionType} to ${owner}/${repo} PR#${prNumber}`);
       
-      // プルリクエスト本体へのリアクション（issueとして扱う）
-      await addReaction(owner, repo, prNumber, reactionType, 'issue');
-      
-      toast("リアクション追加成功", {
-        description: `プルリクエストに ${reactionType} リアクションを追加しました`,
-      });
-      
-      // UIを楽観的に更新
+      // Optimistic update
       setPrReactions(prevReactions => {
         const updatedReactions = { ...prevReactions };
         
@@ -94,13 +91,28 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         
         return updatedReactions;
       });
+      
+      // Add reaction to GitHub
+      await addReaction(owner, repo, prNumber, reactionType, 'issue');
+      
+      // Fetch updated reactions from server
+      const updatedReactions = await fetchPullRequestReactions(owner, repo, prNumber);
+      setPrReactions(updatedReactions);
+      
+      toast("リアクション追加成功", {
+        description: `プルリクエストに ${reactionType} リアクションを追加しました`,
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error("PR Reaction Error:", errorMessage);
       
+      // Revert optimistic update on error
+      const revertedReactions = await fetchPullRequestReactions(owner, repo, prNumber);
+      setPrReactions(revertedReactions);
+      
       toast("リアクション追加エラー", {
         description: `エラー詳細: ${errorMessage}`,
-        duration: 8000, // 長めに表示
+        duration: 8000,
       });
     }
   };
@@ -116,13 +128,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     try {
       console.log(`Comment Reaction Debug: ${reactionType} to comment ${commentId}`);
       
-      await addReaction(owner, repo, commentId, reactionType);
-      
-      toast("リアクション追加成功", {
-        description: `コメントに ${reactionType} リアクションを追加しました`,
-      });
-      
-      // UIを楽観的に更新
+      // Optimistic update for comments
       setComments(comments.map(comment => {
         if (comment.id === commentId && comment.reactions) {
           const updatedReactions = { ...comment.reactions };
@@ -149,13 +155,27 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         }
         return comment;
       }));
+      
+      await addReaction(owner, repo, commentId, reactionType);
+      
+      // Fetch updated comments from server
+      const updatedComments = await fetchPullRequestComments(owner, repo, prNumber);
+      setComments(updatedComments);
+      
+      toast("リアクション追加成功", {
+        description: `コメントに ${reactionType} リアクションを追加しました`,
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error("Comment Reaction Error:", errorMessage);
       
+      // Revert optimistic update on error
+      const revertedComments = await fetchPullRequestComments(owner, repo, prNumber);
+      setComments(revertedComments);
+      
       toast("リアクション追加エラー", {
         description: `エラー詳細: ${errorMessage}`,
-        duration: 8000, // 長めに表示
+        duration: 8000,
       });
     }
   };

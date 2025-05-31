@@ -176,6 +176,47 @@ export const fetchPullRequestDetails = async (owner: string, repo: string, prNum
   }
 };
 
+/**
+ * Fetch reactions for a pull request (issue)
+ */
+export const fetchPullRequestReactions = async (owner: string, repo: string, prNumber: number): Promise<any> => {
+  try {
+    const headers = await getAuthHeaders();
+    headers["Accept"] = "application/vnd.github+json";
+    
+    const response = await fetch(`${BASE_URL}/repos/${owner}/${repo}/issues/${prNumber}/reactions`, { headers });
+    
+    if (!response.ok) {
+      console.warn(`Failed to fetch PR reactions: ${response.status}`);
+      return {};
+    }
+    
+    const reactions = await response.json();
+    
+    // Count reactions by type
+    const reactionCounts = {
+      "+1": 0,
+      "-1": 0,
+      heart: 0,
+      smile: 0,
+      frown: 0
+    };
+    
+    reactions.forEach((reaction: any) => {
+      if (reaction.content === "+1") reactionCounts["+1"]++;
+      if (reaction.content === "-1") reactionCounts["-1"]++;
+      if (reaction.content === "heart") reactionCounts.heart++;
+      if (reaction.content === "laugh") reactionCounts.smile++;
+      if (reaction.content === "confused") reactionCounts.frown++;
+    });
+    
+    return reactionCounts;
+  } catch (error) {
+    console.error("Error fetching PR reactions:", error);
+    return {};
+  }
+};
+
 export const fetchPullRequestComments = async (owner: string, repo: string, prNumber: number): Promise<Comment[]> => {
   try {
     const issueCommentsUrl = `${BASE_URL}/repos/${owner}/${repo}/issues/${prNumber}/comments`;
