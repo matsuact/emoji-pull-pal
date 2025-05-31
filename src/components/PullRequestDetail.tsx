@@ -31,10 +31,6 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
   const [prReactions, setPrReactions] = useState<any>({});
   const { isAuthenticated } = useAuth();
 
-  // デバッグ用のログ
-  console.log('PullRequestDetail - 認証状態:', isAuthenticated);
-  console.log('PullRequestDetail - コメント数:', comments.length);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -44,7 +40,6 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         setPrDetails(details);
         
         const prComments = await fetchPullRequestComments(owner, repo, prNumber);
-        console.log('取得したコメント:', prComments);
         setComments(prComments);
       } catch (err) {
         setError("プルリクエストデータの読み込み中にエラーが発生しました");
@@ -66,10 +61,13 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     }
     
     try {
+      console.log(`PR Reaction Debug: ${reactionType} to ${owner}/${repo} PR#${prNumber}`);
+      
       // プルリクエスト本体へのリアクション（issueとして扱う）
       await addReaction(owner, repo, prNumber, reactionType, 'issue');
-      toast("リアクション追加", {
-        description: "プルリクエストにリアクションが登録されました（シミュレーション）",
+      
+      toast("リアクション追加成功", {
+        description: `プルリクエストに ${reactionType} リアクションを追加しました`,
       });
       
       // UIを楽観的に更新
@@ -97,8 +95,12 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         return updatedReactions;
       });
     } catch (err) {
-      toast("エラー", {
-        description: "リアクションの追加に失敗しました。 " + (err as Error).message,
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error("PR Reaction Error:", errorMessage);
+      
+      toast("リアクション追加エラー", {
+        description: `エラー詳細: ${errorMessage}`,
+        duration: 8000, // 長めに表示
       });
     }
   };
@@ -112,13 +114,15 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     }
     
     try {
+      console.log(`Comment Reaction Debug: ${reactionType} to comment ${commentId}`);
+      
       await addReaction(owner, repo, commentId, reactionType);
-      toast("リアクション追加", {
-        description: "リアクションが登録されました（シミュレーション）",
+      
+      toast("リアクション追加成功", {
+        description: `コメントに ${reactionType} リアクションを追加しました`,
       });
       
-      // In a real app with proper authentication, we would refetch the comments to get updated reactions
-      // For this demo, we'll just update the UI optimistically
+      // UIを楽観的に更新
       setComments(comments.map(comment => {
         if (comment.id === commentId && comment.reactions) {
           const updatedReactions = { ...comment.reactions };
@@ -146,8 +150,12 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         return comment;
       }));
     } catch (err) {
-      toast("エラー", {
-        description: "リアクションの追加に失敗しました。 " + (err as Error).message,
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error("Comment Reaction Error:", errorMessage);
+      
+      toast("リアクション追加エラー", {
+        description: `エラー詳細: ${errorMessage}`,
+        duration: 8000, // 長めに表示
       });
     }
   };
@@ -212,6 +220,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             variant="outline" 
             className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('thumbs_up')}
+            disabled={!isAuthenticated}
           >
             <ThumbsUp className="h-4 w-4 mr-1" />
             {prReactions["+1"] || 0}
@@ -221,6 +230,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             variant="outline" 
             className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('thumbs_down')}
+            disabled={!isAuthenticated}
           >
             <ThumbsDown className="h-4 w-4 mr-1" />
             {prReactions["-1"] || 0}
@@ -230,6 +240,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             variant="outline" 
             className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('smile')}
+            disabled={!isAuthenticated}
           >
             <Smile className="h-4 w-4 mr-1" />
             {prReactions.smile || 0}
@@ -239,6 +250,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             variant="outline" 
             className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('frown')}
+            disabled={!isAuthenticated}
           >
             <Frown className="h-4 w-4 mr-1" />
             {prReactions.frown || 0}
@@ -248,6 +260,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             variant="outline" 
             className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('heart')}
+            disabled={!isAuthenticated}
           >
             <Heart className="h-4 w-4 mr-1" />
             {prReactions.heart || 0}
@@ -260,9 +273,9 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         会話
       </h2>
       
-      {/* デバッグ用の認証状態表示 */}
+      {/* デバッグ情報 */}
       <div className="mb-4 p-2 bg-gray-100 rounded text-sm text-gray-600">
-        デバッグ: 認証状態 = {isAuthenticated ? 'ログイン済み' : '未ログイン'}, コメント数 = {comments.length}
+        認証状態: {isAuthenticated ? 'ログイン済み' : '未ログイン'} | コメント数: {comments.length} | PR番号: {prNumber}
       </div>
       
       {comments.length === 0 ? (
@@ -294,6 +307,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'thumbs_up')}
+                      disabled={!isAuthenticated}
                     >
                       <ThumbsUp className="h-4 w-4 mr-1" />
                       {comment.reactions?.["+1"] || 0}
@@ -303,6 +317,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'thumbs_down')}
+                      disabled={!isAuthenticated}
                     >
                       <ThumbsDown className="h-4 w-4 mr-1" />
                       {comment.reactions?.["-1"] || 0}
@@ -312,6 +327,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'smile')}
+                      disabled={!isAuthenticated}
                     >
                       <Smile className="h-4 w-4 mr-1" />
                       {comment.reactions?.smile || 0}
@@ -321,6 +337,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'frown')}
+                      disabled={!isAuthenticated}
                     >
                       <Frown className="h-4 w-4 mr-1" />
                       {comment.reactions?.frown || 0}
@@ -330,6 +347,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       variant="outline" 
                       className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'heart')}
+                      disabled={!isAuthenticated}
                     >
                       <Heart className="h-4 w-4 mr-1" />
                       {comment.reactions?.heart || 0}
