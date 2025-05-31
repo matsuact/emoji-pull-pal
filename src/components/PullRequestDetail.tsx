@@ -96,7 +96,6 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     } catch (err) {
       toast("エラー", {
         description: "リアクションの追加に失敗しました。 " + (err as Error).message,
-        // The 'variant' property is not recognized by sonner, so we're removing it
       });
     }
   };
@@ -185,10 +184,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-xs" 
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'thumbs_up')}
-                      disabled={!isAuthenticated}
-                      title={isAuthenticated ? "👍 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <ThumbsUp className="h-4 w-4 mr-1" />
                       {comment.reactions?.["+1"] || 0}
@@ -196,10 +193,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-xs"
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'thumbs_down')}
-                      disabled={!isAuthenticated}
-                      title={isAuthenticated ? "👎 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <ThumbsDown className="h-4 w-4 mr-1" />
                       {comment.reactions?.["-1"] || 0}
@@ -207,10 +202,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-xs"
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'smile')}
-                      disabled={!isAuthenticated}
-                      title={isAuthenticated ? "😄 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <Smile className="h-4 w-4 mr-1" />
                       {comment.reactions?.smile || 0}
@@ -218,10 +211,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-xs"
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'frown')}
-                      disabled={!isAuthenticated}
-                      title={isAuthenticated ? "😕 リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <Frown className="h-4 w-4 mr-1" />
                       {comment.reactions?.frown || 0}
@@ -229,10 +220,8 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-xs"
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'heart')}
-                      disabled={!isAuthenticated}
-                      title={isAuthenticated ? "❤️ リアクションを追加" : "リアクションを追加するにはログインしてください"}
                     >
                       <Heart className="h-4 w-4 mr-1" />
                       {comment.reactions?.heart || 0}
