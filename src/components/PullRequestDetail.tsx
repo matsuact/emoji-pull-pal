@@ -30,6 +30,10 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
+  // デバッグ用のログ
+  console.log('PullRequestDetail - 認証状態:', isAuthenticated);
+  console.log('PullRequestDetail - コメント数:', comments.length);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -39,6 +43,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         setPrDetails(details);
         
         const prComments = await fetchPullRequestComments(owner, repo, prNumber);
+        console.log('取得したコメント:', prComments);
         setComments(prComments);
       } catch (err) {
         setError("プルリクエストデータの読み込み中にエラーが発生しました");
@@ -157,9 +162,66 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
         会話
       </h2>
       
+      {/* デバッグ用の認証状態表示 */}
+      <div className="mb-4 p-2 bg-gray-100 rounded text-sm text-gray-600">
+        デバッグ: 認証状態 = {isAuthenticated ? 'ログイン済み' : '未ログイン'}, コメント数 = {comments.length}
+      </div>
+      
       {comments.length === 0 ? (
         <Card className="p-4 text-center">
           <p className="text-muted-foreground">コメントはまだありません</p>
+          
+          {/* コメントがない場合でもテスト用のリアクションボタンを表示 */}
+          <div className="mt-4">
+            <p className="text-sm text-gray-500 mb-2">リアクションボタンテスト:</p>
+            <div className="flex flex-wrap gap-1 justify-center">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => handleReaction(0, 'thumbs_up')}
+              >
+                <ThumbsUp className="h-4 w-4 mr-1" />
+                0
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => handleReaction(0, 'thumbs_down')}
+              >
+                <ThumbsDown className="h-4 w-4 mr-1" />
+                0
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => handleReaction(0, 'smile')}
+              >
+                <Smile className="h-4 w-4 mr-1" />
+                0
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => handleReaction(0, 'frown')}
+              >
+                <Frown className="h-4 w-4 mr-1" />
+                0
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => handleReaction(0, 'heart')}
+              >
+                <Heart className="h-4 w-4 mr-1" />
+                0
+              </Button>
+            </div>
+          </div>
         </Card>
       ) : (
         <div className="space-y-4">
