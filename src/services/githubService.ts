@@ -224,6 +224,18 @@ export const addReaction = async (
       throw new Error("Authentication required to add reactions");
     }
     
+    // GitHubのリアクション形式に変換
+    const reactionMap: Record<string, string> = {
+      'thumbs_up': '+1',
+      'thumbs_down': '-1',
+      'smile': 'laugh',
+      'frown': 'confused',
+      'heart': 'heart'
+    };
+    
+    const githubReaction = reactionMap[reaction] || reaction;
+    console.log(`Adding reaction: ${githubReaction} to ${type} ${id}`);
+    
     // プルリクエスト本体へのリアクションかコメントへのリアクションかを判別
     let url: string;
     if (type === 'issue') {
@@ -235,19 +247,27 @@ export const addReaction = async (
     }
     
     const headers = await getAuthHeaders();
-    headers["Accept"] = "application/vnd.github.squirrel-girl-preview+json";
+    // リアクションAPI用のAcceptヘッダーを設定
+    headers["Accept"] = "application/vnd.github+json";
+    headers["X-GitHub-Api-Version"] = "2022-11-28";
+    
+    console.log(`Making request to: ${url}`);
+    console.log(`With reaction content: ${githubReaction}`);
     
     const response = await fetch(url, {
       method: "POST",
       headers,
-      body: JSON.stringify({ content: reaction })
+      body: JSON.stringify({ content: githubReaction })
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to add reaction: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`API Error Response:`, errorText);
+      throw new Error(`Failed to add reaction: ${response.status} - ${errorText}`);
     }
     
-    console.log(`Added ${reaction} reaction to ${type} ${id}`);
+    const result = await response.json();
+    console.log(`Successfully added ${githubReaction} reaction:`, result);
   } catch (error) {
     console.error("Error adding reaction:", error);
     throw error;
