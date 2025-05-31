@@ -28,6 +28,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [prReactions, setPrReactions] = useState<any>({});
   const { isAuthenticated } = useAuth();
 
   // デバッグ用のログ
@@ -55,6 +56,52 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
     
     fetchData();
   }, [owner, repo, prNumber]);
+
+  const handlePRReaction = async (reactionType: string) => {
+    if (!isAuthenticated) {
+      toast("認証が必要です", {
+        description: "リアクションを追加するにはGitHubにログインしてください",
+      });
+      return;
+    }
+    
+    try {
+      // プルリクエスト本体へのリアクション（issueとして扱う）
+      await addReaction(owner, repo, prNumber, reactionType, 'issue');
+      toast("リアクション追加", {
+        description: "プルリクエストにリアクションが登録されました（シミュレーション）",
+      });
+      
+      // UIを楽観的に更新
+      setPrReactions(prevReactions => {
+        const updatedReactions = { ...prevReactions };
+        
+        switch (reactionType) {
+          case 'thumbs_up':
+            updatedReactions["+1"] = (updatedReactions["+1"] || 0) + 1;
+            break;
+          case 'thumbs_down':
+            updatedReactions["-1"] = (updatedReactions["-1"] || 0) + 1;
+            break;
+          case 'smile':
+            updatedReactions.smile = (updatedReactions.smile || 0) + 1;
+            break;
+          case 'frown':
+            updatedReactions.frown = (updatedReactions.frown || 0) + 1;
+            break;
+          case 'heart':
+            updatedReactions.heart = (updatedReactions.heart || 0) + 1;
+            break;
+        }
+        
+        return updatedReactions;
+      });
+    } catch (err) {
+      toast("エラー", {
+        description: "リアクションの追加に失敗しました。 " + (err as Error).message,
+      });
+    }
+  };
 
   const handleReaction = async (commentId: number, reactionType: string) => {
     if (!isAuthenticated) {
@@ -148,12 +195,63 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
           </div>
         </div>
         
-        <div className="prose max-w-none">
+        <div className="prose max-w-none mb-4">
           {prDetails.body ? (
             <p className="whitespace-pre-line">{prDetails.body}</p>
           ) : (
             <p className="text-muted-foreground">説明はありません</p>
           )}
+        </div>
+
+        <Separator className="my-4" />
+        
+        {/* プルリクエスト本体のリアクションボタン */}
+        <div className="flex flex-wrap gap-1">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('thumbs_up')}
+          >
+            <ThumbsUp className="h-4 w-4 mr-1" />
+            {prReactions["+1"] || 0}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('thumbs_down')}
+          >
+            <ThumbsDown className="h-4 w-4 mr-1" />
+            {prReactions["-1"] || 0}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('smile')}
+          >
+            <Smile className="h-4 w-4 mr-1" />
+            {prReactions.smile || 0}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('frown')}
+          >
+            <Frown className="h-4 w-4 mr-1" />
+            {prReactions.frown || 0}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('heart')}
+          >
+            <Heart className="h-4 w-4 mr-1" />
+            {prReactions.heart || 0}
+          </Button>
         </div>
       </Card>
 
@@ -170,58 +268,6 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
       {comments.length === 0 ? (
         <Card className="p-4 text-center">
           <p className="text-muted-foreground">コメントはまだありません</p>
-          
-          {/* コメントがない場合でもテスト用のリアクションボタンを表示 */}
-          <div className="mt-4">
-            <p className="text-sm text-gray-500 mb-2">リアクションボタンテスト:</p>
-            <div className="flex flex-wrap gap-1 justify-center">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => handleReaction(0, 'thumbs_up')}
-              >
-                <ThumbsUp className="h-4 w-4 mr-1" />
-                0
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => handleReaction(0, 'thumbs_down')}
-              >
-                <ThumbsDown className="h-4 w-4 mr-1" />
-                0
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => handleReaction(0, 'smile')}
-              >
-                <Smile className="h-4 w-4 mr-1" />
-                0
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => handleReaction(0, 'frown')}
-              >
-                <Frown className="h-4 w-4 mr-1" />
-                0
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => handleReaction(0, 'heart')}
-              >
-                <Heart className="h-4 w-4 mr-1" />
-                0
-              </Button>
-            </div>
-          </div>
         </Card>
       ) : (
         <div className="space-y-4">

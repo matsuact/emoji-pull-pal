@@ -213,8 +213,9 @@ export const fetchPullRequestComments = async (owner: string, repo: string, prNu
 export const addReaction = async (
   owner: string, 
   repo: string, 
-  commentId: number, 
-  reaction: string
+  id: number, 
+  reaction: string,
+  type: 'comment' | 'issue' = 'comment'
 ): Promise<void> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -223,7 +224,16 @@ export const addReaction = async (
       throw new Error("Authentication required to add reactions");
     }
     
-    const url = `${BASE_URL}/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`;
+    // プルリクエスト本体へのリアクションかコメントへのリアクションかを判別
+    let url: string;
+    if (type === 'issue') {
+      // プルリクエスト本体（issueとして扱われる）
+      url = `${BASE_URL}/repos/${owner}/${repo}/issues/${id}/reactions`;
+    } else {
+      // コメント
+      url = `${BASE_URL}/repos/${owner}/${repo}/issues/comments/${id}/reactions`;
+    }
+    
     const headers = await getAuthHeaders();
     headers["Accept"] = "application/vnd.github.squirrel-girl-preview+json";
     
@@ -237,7 +247,7 @@ export const addReaction = async (
       throw new Error(`Failed to add reaction: ${response.status}`);
     }
     
-    console.log(`Added ${reaction} reaction to comment ${commentId}`);
+    console.log(`Added ${reaction} reaction to ${type} ${id}`);
   } catch (error) {
     console.error("Error adding reaction:", error);
     throw error;
