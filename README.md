@@ -1,73 +1,76 @@
-# Welcome to your Lovable project
+# emoji-pull-pal
 
-## Project info
+## 概要
 
-**URL**: https://lovable.dev/projects/3fc4c1c9-a454-47ef-b46a-a249d40d697d
+**emoji-pull-pal** は、GitHubのプルリクエストやコメントに対して、絵文字リアクションを簡単に付与・集計できるWebアプリです。  
+GitHub認証を利用し、全ての公式リアクション（👍 👎 😄 😕 ❤️ 🎉 🚀 👀）に対応しています。
 
-## How can I edit this code?
+## 主な機能
 
-There are several ways of editing your application.
+- GitHubリポジトリのプルリクエスト一覧・詳細表示
+- プルリクエストやコメントへの絵文字リアクション付与
+- 各リアクションの集計表示
+- GitHubアカウントによる認証（Supabase連携）
+- 検索・ソート機能
 
-**Use Lovable**
+## 利用方法
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3fc4c1c9-a454-47ef-b46a-a249d40d697d) and start prompting.
+### 1. 必要な環境変数の設定
 
-Changes made via Lovable will be committed automatically to this repo.
+プロジェクトルートに `.env` ファイルを作成し、以下を記載してください。
 
-**Use your preferred IDE**
+```
+VITE_SUPABASE_URL=（あなたのSupabaseプロジェクトURL）
+VITE_SUPABASE_PUBLISHABLE_KEY=（あなたのSupabase公開鍵）
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 2. 依存パッケージのインストール
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+npm install
+```
 
-Follow these steps:
+### 3. 開発サーバーの起動
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+ブラウザで [http://localhost:5173](http://localhost:5173) を開いて動作を確認できます。
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### 4. Supabaseの設定
 
-**Use GitHub Codespaces**
+Supabaseの「Authentication > URL Configuration」で、以下のRedirect URLsを必ず登録してください。
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `http://localhost:5173/auth/callback`
+- `https://emoji-pull-pal.vercel.app/auth/callback`（本番用）
 
-## What technologies are used for this project?
+### 5. Vercelへのデプロイ
 
-This project is built with:
+Vercelの環境変数設定画面で、`.env` と同じ内容を登録してください。
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 技術スタック
 
-Simply open [Lovable](https://lovable.dev/projects/3fc4c1c9-a454-47ef-b46a-a249d40d697d) and click on Share -> Publish.
+- フロントエンド: React, TypeScript, Vite
+- UI: Lucide React, Tailwind CSS
+- バックエンド: Supabase（認証のみ）
+- GitHub REST API v3
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## 注意事項
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- GitHubのリアクション機能を利用するには、GitHubアカウントでのログインが必要です。
+- Supabaseの無料枠には制限があります。大量アクセス時はご注意ください。
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+## ライセンス
+
+このプロジェクトはMITライセンスで公開されています。
+
+---
+
+ご不明点やバグ報告はIssueまでお願いします。
