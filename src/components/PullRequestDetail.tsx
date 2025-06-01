@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale/ja';
 import { PullRequestDetails, Comment } from '@/types/github';
 import { fetchPullRequestDetails, fetchPullRequestComments, fetchPullRequestReactions, addReaction } from '@/services/githubService';
-import { Smile, Frown, Heart, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
+import { Smile, Frown, Heart, ThumbsUp, ThumbsDown, MessageSquare, PartyPopper, Rocket, Eye } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from '@/context/AuthContext';
 
@@ -79,13 +78,22 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             updatedReactions["-1"] = (updatedReactions["-1"] || 0) + 1;
             break;
           case 'smile':
-            updatedReactions.smile = (updatedReactions.smile || 0) + 1;
+            updatedReactions.laugh = (updatedReactions.laugh || 0) + 1;
             break;
           case 'frown':
-            updatedReactions.frown = (updatedReactions.frown || 0) + 1;
+            updatedReactions.confused = (updatedReactions.confused || 0) + 1;
             break;
           case 'heart':
             updatedReactions.heart = (updatedReactions.heart || 0) + 1;
+            break;
+          case 'hooray':
+            updatedReactions.hooray = (updatedReactions.hooray || 0) + 1;
+            break;
+          case 'rocket':
+            updatedReactions.rocket = (updatedReactions.rocket || 0) + 1;
+            break;
+          case 'eyes':
+            updatedReactions.eyes = (updatedReactions.eyes || 0) + 1;
             break;
         }
         
@@ -141,13 +149,22 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
               updatedReactions["-1"] = (updatedReactions["-1"] || 0) + 1;
               break;
             case 'smile':
-              updatedReactions.smile = (updatedReactions.smile || 0) + 1;
+              updatedReactions.laugh = (updatedReactions.laugh || 0) + 1;
               break;
             case 'frown':
-              updatedReactions.frown = (updatedReactions.frown || 0) + 1;
+              updatedReactions.confused = (updatedReactions.confused || 0) + 1;
               break;
             case 'heart':
               updatedReactions.heart = (updatedReactions.heart || 0) + 1;
+              break;
+            case 'hooray':
+              updatedReactions.hooray = (updatedReactions.hooray || 0) + 1;
+              break;
+            case 'rocket':
+              updatedReactions.rocket = (updatedReactions.rocket || 0) + 1;
+              break;
+            case 'eyes':
+              updatedReactions.eyes = (updatedReactions.eyes || 0) + 1;
               break;
           }
           
@@ -263,7 +280,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             disabled={!isAuthenticated}
           >
             <Smile className="h-4 w-4 mr-1" />
-            {prReactions.smile || 0}
+            {prReactions.laugh || 0}
           </Button>
           <Button 
             size="sm" 
@@ -273,7 +290,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
             disabled={!isAuthenticated}
           >
             <Frown className="h-4 w-4 mr-1" />
-            {prReactions.frown || 0}
+            {prReactions.confused || 0}
           </Button>
           <Button 
             size="sm" 
@@ -284,6 +301,36 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
           >
             <Heart className="h-4 w-4 mr-1" />
             {prReactions.heart || 0}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('hooray')}
+            disabled={!isAuthenticated}
+          >
+            <PartyPopper className="h-4 w-4 mr-1" />
+            {prReactions.hooray || 0}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('rocket')}
+            disabled={!isAuthenticated}
+          >
+            <Rocket className="h-4 w-4 mr-1" />
+            {prReactions.rocket || 0}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => handlePRReaction('eyes')}
+            disabled={!isAuthenticated}
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            {prReactions.eyes || 0}
           </Button>
         </div>
       </Card>
@@ -350,7 +397,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       disabled={!isAuthenticated}
                     >
                       <Smile className="h-4 w-4 mr-1" />
-                      {comment.reactions?.smile || 0}
+                      {comment.reactions?.laugh || 0}
                     </Button>
                     <Button 
                       size="sm" 
@@ -360,7 +407,7 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                       disabled={!isAuthenticated}
                     >
                       <Frown className="h-4 w-4 mr-1" />
-                      {comment.reactions?.frown || 0}
+                      {comment.reactions?.confused || 0}
                     </Button>
                     <Button 
                       size="sm" 
@@ -371,6 +418,36 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                     >
                       <Heart className="h-4 w-4 mr-1" />
                       {comment.reactions?.heart || 0}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => handleReaction(comment.id, 'hooray')}
+                      disabled={!isAuthenticated}
+                    >
+                      <PartyPopper className="h-4 w-4 mr-1" />
+                      {comment.reactions?.hooray || 0}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => handleReaction(comment.id, 'rocket')}
+                      disabled={!isAuthenticated}
+                    >
+                      <Rocket className="h-4 w-4 mr-1" />
+                      {comment.reactions?.rocket || 0}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => handleReaction(comment.id, 'eyes')}
+                      disabled={!isAuthenticated}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      {comment.reactions?.eyes || 0}
                     </Button>
                   </div>
                 </div>

@@ -1,4 +1,3 @@
-
 import { PullRequest, PullRequestDetails, Comment, Reaction, SortOption } from "../types/github";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -198,16 +197,22 @@ export const fetchPullRequestReactions = async (owner: string, repo: string, prN
       "+1": 0,
       "-1": 0,
       heart: 0,
-      smile: 0,
-      frown: 0
+      laugh: 0,
+      confused: 0,
+      hooray: 0,
+      rocket: 0,
+      eyes: 0
     };
     
     reactions.forEach((reaction: any) => {
       if (reaction.content === "+1") reactionCounts["+1"]++;
       if (reaction.content === "-1") reactionCounts["-1"]++;
       if (reaction.content === "heart") reactionCounts.heart++;
-      if (reaction.content === "laugh") reactionCounts.smile++;
-      if (reaction.content === "confused") reactionCounts.frown++;
+      if (reaction.content === "laugh") reactionCounts.laugh++;
+      if (reaction.content === "confused") reactionCounts.confused++;
+      if (reaction.content === "hooray") reactionCounts.hooray++;
+      if (reaction.content === "rocket") reactionCounts.rocket++;
+      if (reaction.content === "eyes") reactionCounts.eyes++;
     });
     
     return reactionCounts;
@@ -241,8 +246,11 @@ export const fetchPullRequestComments = async (owner: string, repo: string, prNu
         "+1": comment.reactions["+1"],
         "-1": comment.reactions["-1"],
         heart: comment.reactions.heart,
-        smile: comment.reactions.smile,
-        frown: comment.reactions.frown
+        laugh: comment.reactions.laugh,
+        confused: comment.reactions.confused,
+        hooray: comment.reactions.hooray,
+        rocket: comment.reactions.rocket,
+        eyes: comment.reactions.eyes
       } : undefined
     }));
   } catch (error) {
@@ -271,7 +279,10 @@ export const addReaction = async (
       'thumbs_down': '-1',
       'smile': 'laugh',
       'frown': 'confused',
-      'heart': 'heart'
+      'heart': 'heart',
+      'hooray': 'hooray',
+      'rocket': 'rocket',
+      'eyes': 'eyes'
     };
     
     const githubReaction = reactionMap[reaction] || reaction;

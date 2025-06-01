@@ -1,4 +1,3 @@
-
 export interface Repository {
   owner: string;
   name: string;
@@ -35,8 +34,11 @@ export interface Comment {
     "+1": number;
     "-1": number;
     heart: number;
-    smile: number;
-    frown: number;
+    laugh: number;
+    confused: number;
+    hooray: number;
+    rocket: number;
+    eyes: number;
   };
 }
 
