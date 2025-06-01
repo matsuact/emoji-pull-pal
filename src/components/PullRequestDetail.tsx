@@ -255,81 +255,81 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions["+1"] > 0 ? "bg-yellow-100 hover:bg-yellow-200 border-yellow-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('thumbs_up')}
             disabled={!isAuthenticated}
           >
-            <ThumbsUp className="h-4 w-4 mr-1" />
+            <ThumbsUp className={`h-4 w-4 mr-1 ${prReactions["+1"] > 0 ? "text-yellow-500" : "text-muted-foreground filter grayscale"}`} />
             {prReactions["+1"] || 0}
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions["-1"] > 0 ? "bg-gray-100 hover:bg-gray-200 border-gray-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('thumbs_down')}
             disabled={!isAuthenticated}
           >
-            <ThumbsDown className="h-4 w-4 mr-1" />
+            <ThumbsDown className={`h-4 w-4 mr-1 ${prReactions["-1"] > 0 ? "text-gray-500" : "text-muted-foreground filter grayscale"}`} />
             {prReactions["-1"] || 0}
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions.laugh > 0 ? "bg-yellow-50 hover:bg-yellow-100 border-yellow-200" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('smile')}
             disabled={!isAuthenticated}
           >
-            <Smile className="h-4 w-4 mr-1" />
+            <Smile className={`h-4 w-4 mr-1 ${prReactions.laugh > 0 ? "text-yellow-400" : "text-muted-foreground filter grayscale"}`} />
             {prReactions.laugh || 0}
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions.confused > 0 ? "bg-gray-50 hover:bg-gray-100 border-gray-200" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('frown')}
             disabled={!isAuthenticated}
           >
-            <Frown className="h-4 w-4 mr-1" />
+            <Frown className={`h-4 w-4 mr-1 ${prReactions.confused > 0 ? "text-gray-400" : "text-muted-foreground filter grayscale"}`} />
             {prReactions.confused || 0}
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions.heart > 0 ? "bg-red-100 hover:bg-red-200 border-red-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('heart')}
             disabled={!isAuthenticated}
           >
-            <Heart className="h-4 w-4 mr-1" />
+            <Heart className={`h-4 w-4 mr-1 ${prReactions.heart > 0 ? "text-red-500" : "text-muted-foreground filter grayscale"}`} />
             {prReactions.heart || 0}
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions.hooray > 0 ? "bg-orange-100 hover:bg-orange-200 border-orange-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('hooray')}
             disabled={!isAuthenticated}
           >
-            <PartyPopper className="h-4 w-4 mr-1" />
+            <PartyPopper className={`h-4 w-4 mr-1 ${prReactions.hooray > 0 ? "text-orange-400" : "text-muted-foreground filter grayscale"}`} />
             {prReactions.hooray || 0}
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions.rocket > 0 ? "bg-blue-100 hover:bg-blue-200 border-blue-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('rocket')}
             disabled={!isAuthenticated}
           >
-            <Rocket className="h-4 w-4 mr-1" />
+            <Rocket className={`h-4 w-4 mr-1 ${prReactions.rocket > 0 ? "text-blue-500" : "text-muted-foreground filter grayscale"}`} />
             {prReactions.rocket || 0}
           </Button>
           <Button 
             size="sm" 
             variant="outline" 
-            className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`text-xs ${prReactions.eyes > 0 ? "bg-green-100 hover:bg-green-200 border-green-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handlePRReaction('eyes')}
             disabled={!isAuthenticated}
           >
-            <Eye className="h-4 w-4 mr-1" />
+            <Eye className={`h-4 w-4 mr-1 ${prReactions.eyes > 0 ? "text-green-500" : "text-muted-foreground filter grayscale"}`} />
             {prReactions.eyes || 0}
           </Button>
         </div>
@@ -372,81 +372,81 @@ const PullRequestDetail: React.FC<PullRequestDetailProps> = ({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.["+1"] > 0 ? "bg-yellow-100 hover:bg-yellow-200 border-yellow-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'thumbs_up')}
                       disabled={!isAuthenticated}
                     >
-                      <ThumbsUp className="h-4 w-4 mr-1" />
+                      <ThumbsUp className={`h-4 w-4 mr-1 ${comment.reactions?.["+1"] > 0 ? "text-yellow-500" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.["+1"] || 0}
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.["-1"] > 0 ? "bg-gray-100 hover:bg-gray-200 border-gray-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'thumbs_down')}
                       disabled={!isAuthenticated}
                     >
-                      <ThumbsDown className="h-4 w-4 mr-1" />
+                      <ThumbsDown className={`h-4 w-4 mr-1 ${comment.reactions?.["-1"] > 0 ? "text-gray-500" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.["-1"] || 0}
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.laugh > 0 ? "bg-yellow-50 hover:bg-yellow-100 border-yellow-200" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'smile')}
                       disabled={!isAuthenticated}
                     >
-                      <Smile className="h-4 w-4 mr-1" />
+                      <Smile className={`h-4 w-4 mr-1 ${comment.reactions?.laugh > 0 ? "text-yellow-400" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.laugh || 0}
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.confused > 0 ? "bg-gray-50 hover:bg-gray-100 border-gray-200" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'frown')}
                       disabled={!isAuthenticated}
                     >
-                      <Frown className="h-4 w-4 mr-1" />
+                      <Frown className={`h-4 w-4 mr-1 ${comment.reactions?.confused > 0 ? "text-gray-400" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.confused || 0}
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.heart > 0 ? "bg-red-100 hover:bg-red-200 border-red-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'heart')}
                       disabled={!isAuthenticated}
                     >
-                      <Heart className="h-4 w-4 mr-1" />
+                      <Heart className={`h-4 w-4 mr-1 ${comment.reactions?.heart > 0 ? "text-red-500" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.heart || 0}
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.hooray > 0 ? "bg-orange-100 hover:bg-orange-200 border-orange-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'hooray')}
                       disabled={!isAuthenticated}
                     >
-                      <PartyPopper className="h-4 w-4 mr-1" />
+                      <PartyPopper className={`h-4 w-4 mr-1 ${comment.reactions?.hooray > 0 ? "text-orange-400" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.hooray || 0}
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.rocket > 0 ? "bg-blue-100 hover:bg-blue-200 border-blue-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'rocket')}
                       disabled={!isAuthenticated}
                     >
-                      <Rocket className="h-4 w-4 mr-1" />
+                      <Rocket className={`h-4 w-4 mr-1 ${comment.reactions?.rocket > 0 ? "text-blue-500" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.rocket || 0}
                     </Button>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className={`text-xs ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-xs ${comment.reactions?.eyes > 0 ? "bg-green-100 hover:bg-green-200 border-green-300" : "bg-white"} ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => handleReaction(comment.id, 'eyes')}
                       disabled={!isAuthenticated}
                     >
-                      <Eye className="h-4 w-4 mr-1" />
+                      <Eye className={`h-4 w-4 mr-1 ${comment.reactions?.eyes > 0 ? "text-green-500" : "text-muted-foreground filter grayscale"}`} />
                       {comment.reactions?.eyes || 0}
                     </Button>
                   </div>
